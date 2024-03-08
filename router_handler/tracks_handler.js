@@ -262,7 +262,7 @@ exports.getArtistsCover = async (req, res) => {
     
     for (const row of result) {
       // console.log(row);
-      if(row.cover == null){
+      if(row.ne_artist_id != "0" && row.avatar == null){
         try{
           const response = await axios.get(`http://localhost:3000/artist/detail?id=${row.ne_artist_id}`);
           if (response.data.data){

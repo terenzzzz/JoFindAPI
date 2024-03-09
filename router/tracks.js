@@ -6,14 +6,14 @@ const router = express.Router()
 //导入处理函数
 const tracksHandler = require('../router_handler/tracks_handler')
 
-router.get('/queryMetadata', tracksHandler.queryMetadata)
-router.get('/queryNetEase', tracksHandler.queryNetEase)
-router.get('/queryLyric', tracksHandler.queryLyric)
-router.get('/queryCover', tracksHandler.queryCover)
+
 router.get('/getTracks', tracksHandler.getTracks)
-router.get('/getTracksTags', tracksHandler.getTracksTags)
-router.get('/getArtistsTags', tracksHandler.getArtistsTags)
-router.get('/getArtistsCover', tracksHandler.getArtistsCover)
+router.get('/getDailyRecomm', tracksHandler.getDailyRecomm)
+router.get('/getResonanace', tracksHandler.getResonanace)
+router.get('/getMoodVibe', tracksHandler.getMoodVibe)
+router.get('/getSceneRhythm', tracksHandler.getSceneRhythm)
+router.get('/getRecentlyPlayed', tracksHandler.getRecentlyPlayed)
+
 
 //共享
 module.exports = router

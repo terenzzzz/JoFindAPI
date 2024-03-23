@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3');
 const db = require('../db/index')
 const axios = require('axios');
+const { log } = require('../utils/logger');
 
 const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
 
@@ -512,12 +513,13 @@ exports.getTrackWiki = async (req, res) => {
     let totalCount = result.length
     
     for (const row of result) {   
-      if(row.summary == null){
+      if(row.id != null && row.summary == null && row.id >= "183371"){
+        console.log(row.id);
         try{
           const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=track.getinfo&artist=${row.artist_name}&track=${row.title}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
           if (response.data.track && response.data.track.wiki){
-            let summary = encodeURIComponent(response.data.track.wiki.summary)
-            let published = encodeURIComponent(response.data.track.wiki.published)
+            let summary = response.data.track.wiki.summary
+            let published = response.data.track.wiki.published
             await new Promise((resolve, reject) => {
               db.query(
                 'UPDATE Tracks SET summary = ?, published = ? WHERE id = ?;', 
@@ -542,7 +544,7 @@ exports.getTrackWiki = async (req, res) => {
             console.error('Error making request:', error);
           }
           console.log('Pausing for 5 minutes due to error...');
-          await sleep(3000000); // 暂停五分钟
+          // await sleep(3000000); // 暂停五分钟
         }
         // await sleep(1000); // 暂停 
       }else{
@@ -553,3 +555,8 @@ exports.getTrackWiki = async (req, res) => {
     console.error('Error:', error);
   }
 };
+
+
+/**
+ * Import Into MongoDB
+ */

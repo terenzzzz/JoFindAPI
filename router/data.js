@@ -13,6 +13,10 @@ router.get('/queryCover', dataHandler.queryCover)
 router.get('/getTracksTags', dataHandler.getTracksTags)
 router.get('/getArtistsTags', dataHandler.getArtistsTags)
 router.get('/getArtistsCover', dataHandler.getArtistsCover)
+router.get('/getArtistsWiki', dataHandler.getArtistsWiki)
+router.get('/getTrackWiki', dataHandler.getTrackWiki)
+
+
 
 //共享
 module.exports = router

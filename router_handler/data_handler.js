@@ -7,19 +7,17 @@ const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.d
 // 从SQlite文件添加数据到Mysql
 exports.queryMetadata = (req, res) => {
     // logger.log("queryMetadata")
-    sqliteDB.all('SELECT * FROM songs WHERE year = 2009', (err, rows) => {
+    sqliteDB.all('SELECT * FROM songs WHERE year = 2005', (err, rows) => {
         if (err) {
             console.error(err.message);
             return;
         }
-        // rows 是一个包含查询结果的数组
-        // console.log(rows);
         // 遍历 SQLite 查询结果并将数据插入到 MySQL 数据库中
         rows.forEach((row) => {
-          if(row.year > 2005){
+          if(row.year >= 2005){
             db.query(
-              'INSERT INTO Tracks (track_id, title, song_id, `release`, artist_id, artist_name, duration, artist_familiarity, artist_hotttnesss, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-              [row.track_id, row.title, row.song_id, row.release, row.artist_id, row.artist_name, row.duration, row.artist_familiarity, row.artist_hotttnesss, row.year], 
+              'INSERT INTO Tracks (track_id, title, `release`, artist_id, artist_name, duration, artist_familiarity, artist_hotttnesss, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+              [row.track_id, row.title, row.release, row.artist_id, row.artist_name, row.duration, row.artist_familiarity, row.artist_hotttnesss, row.year], 
               (err, result) => {
                 if (err) {
                   console.error('Error inserting row: ' + err.stack);
@@ -54,7 +52,7 @@ exports.queryNetEase = async (req, res) => {
     let totalCount = result.length
     
     for (const row of result) {
-      if (row.ne_song_id == null) {
+      if (row.id >= 217998 && row.ne_song_id == null) {
         try {
           const response = await axios.get(`http://localhost:3000/search?keywords=${row.artist_name} ${row.title}&limit=1`);
           if (response.data.result && response.data.result.songs && response.data.result.songs[0].album.name.length <= 225 ){
@@ -248,7 +246,7 @@ exports.getArtistsCover = async (req, res) => {
     
     for (const row of result) {
       // console.log(row);
-      if(row.ne_artist_id != "0" && row.avatar == null){
+      if(row.id >= "33340" && row.ne_artist_id != "0" && row.avatar == null){
         try{
           const response = await axios.get(`http://localhost:3000/artist/detail?id=${row.ne_artist_id}`);
           if (response.data.data){
@@ -410,6 +408,128 @@ exports.getArtistsTags = async (req, res) => {
                   }
                   count++
                   console.log(`Updated artist tags row with ID ${row.id}. (${count}/${totalCount})`);
+                  resolve();
+                }
+              );
+            });
+          }
+        } catch (error) {
+          if (error.response) {
+            console.error('Error making request:', error.response.data);
+          } else {
+            console.error('Error making request:', error);
+          }
+          console.log('Pausing for 5 minutes due to error...');
+          await sleep(3000000); // 暂停五分钟
+        }
+        // await sleep(1000); // 暂停 
+      }else{
+        count++
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+// 从last.fm获取artist wiki
+exports.getArtistsWiki = async (req, res) => {
+  try {
+    const sqlQuery = `select * from Artists`;
+    const result = await new Promise((resolve, reject) => {
+      db.query(sqlQuery, (err, result) => {
+        if (err) {
+          console.error('Error executing query:', err);
+          reject(err);
+          return;
+        }
+        resolve(result);
+      });
+    });
+
+    var count = 0
+    let totalCount = result.length
+    
+    for (const row of result) {   
+      if(row.summary == null){
+        try{
+          const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${row.name}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+          if (response.data.artist){
+            let summary = response.data.artist.bio.summary
+            let published = response.data.artist.bio.published
+            await new Promise((resolve, reject) => {
+              db.query(
+                'UPDATE Artists SET summary = ?, published = ? WHERE id = ?;', 
+                [summary,published, row.id], 
+                (err, result) => {
+                  if (err) {
+                    console.error('Error updating row: ' + err.stack);
+                    reject(err);
+                    return;
+                  }
+                  count++
+                  console.log(`Updated artist WIKI row with ID ${row.id}. (${count}/${totalCount})`);
+                  resolve();
+                }
+              );
+            });
+          }
+        } catch (error) {
+          if (error.response) {
+            console.error('Error making request:', error.response.data);
+          } else {
+            console.error('Error making request:', error);
+          }
+          console.log('Pausing for 5 minutes due to error...');
+          await sleep(3000000); // 暂停五分钟
+        }
+        // await sleep(1000); // 暂停 
+      }else{
+        count++
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+// 从last.fm 获取 track wiki
+exports.getTrackWiki = async (req, res) => {
+  try {
+    const sqlQuery = `select * from Tracks`;
+    const result = await new Promise((resolve, reject) => {
+      db.query(sqlQuery, (err, result) => {
+        if (err) {
+          console.error('Error executing query:', err);
+          reject(err);
+          return;
+        }
+        resolve(result);
+      });
+    });
+
+    var count = 0
+    let totalCount = result.length
+    
+    for (const row of result) {   
+      if(row.summary == null){
+        try{
+          const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=track.getinfo&artist=${row.artist_name}&track=${row.title}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+          if (response.data.track && response.data.track.wiki){
+            let summary = encodeURIComponent(response.data.track.wiki.summary)
+            let published = encodeURIComponent(response.data.track.wiki.published)
+            await new Promise((resolve, reject) => {
+              db.query(
+                'UPDATE Tracks SET summary = ?, published = ? WHERE id = ?;', 
+                [summary,published, row.id], 
+                (err, result) => {
+                  if (err) {
+                    console.error('Error updating row: ' + err.stack);
+                    reject(err);
+                    return;
+                  }
+                  count++
+                  console.log(`Updated track WIKI row with ID ${row.id}. (${count}/${totalCount})`);
                   resolve();
                 }
               );

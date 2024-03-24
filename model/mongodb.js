@@ -55,8 +55,19 @@ const getTracks = async () => {
 };
 
 const getRandomTracks = async () => {
+    // Update Algorithm
     try {
         return await Track.find().populate("artist").populate("tags").populate("tags.tag").limit(20);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+/* Artist Function */
+const getRandomArtists = async () => {
+    // Update Algorithm
+    try {
+        return await Artist.find().populate("tags").populate("tags.tag").limit(20);
     } catch (error) {
         console.log(error);
     }
@@ -160,6 +171,7 @@ module.exports = {
     addTrack,
     addTag,
     getTracks,
-    getRandomTracks
+    getRandomTracks,
+    getRandomArtists
 }
 

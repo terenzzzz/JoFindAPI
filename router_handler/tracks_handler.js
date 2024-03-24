@@ -26,7 +26,6 @@ exports.getDailyRecomm = async (req, res) => {
 
 exports.getResonanace = async (req, res) => {
   // TODO: Update Algorithm
-  const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
   try{
     const tracks = await mongodb.getRandomTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})
@@ -37,7 +36,6 @@ exports.getResonanace = async (req, res) => {
 
 exports.getMoodVibe = async (req, res) => {
   // TODO: Update Algorithm
-  const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
   try{
     const tracks = await mongodb.getRandomTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})

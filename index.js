@@ -38,12 +38,14 @@ app.use(expressJWT({ secret: config.jwtSecretKey, algorithms: ['HS256'] }).unles
 
 //登录模块
 const userRouter = require('./router/user')
-const tracksRouter = require('./router/tracks')
+const trackRouter = require('./router/tracks')
+const artistRouter = require('./router/artist')
 const dataRouter = require('./router/data')
 
 
 app.use('/api', userRouter)
-app.use('/api', tracksRouter)
+app.use('/api', trackRouter)
+app.use('/api', artistRouter)
 app.use('/api', dataRouter)
 // app.use('/my', userInfoRouter)
 

@@ -2,84 +2,67 @@ const sqlite3 = require('sqlite3');
 const db = require('../db/index')
 const logger = require('../utils/logger');
 const axios = require('axios');
-
+const mongodb = require("../model/mongodb")
 
 // 获取Tracks
-exports.getTracks = (req, res) => {
-  const limit = req.query.limit || 10;
-  const sqlQuery = `select * from Tracks LIMIT ${limit}`;
-  db.query(sqlQuery, function (err, results) {
-    if (err) {
-        return res.send({ status: 1, message: err.message })
-    }
-
-    return res.send({ status: 200, message: 'Success', data: results})
-
-  })
+exports.getTracks = async (req, res) => {
+  try{
+    const tracks = await mongodb.getTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
 };
 
-exports.getDailyRecomm = (req, res) => {
+exports.getDailyRecomm = async (req, res) => {
   // TODO: Update Recomm Algorithm
-  const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
-  db.query(sqlQuery, function (err, results) {
-    if (err) {
-        return res.send({ status: 1, message: err.message })
-    }
-
-    return res.send({ status: 200, message: 'Success', data: results})
-
-  })
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
 }
 
-exports.getResonanace = (req, res) => {
+exports.getResonanace = async (req, res) => {
   // TODO: Update Algorithm
   const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
-  db.query(sqlQuery, function (err, results) {
-    if (err) {
-        return res.send({ status: 1, message: err.message })
-    }
-
-    return res.send({ status: 200, message: 'Success', data: results})
-
-  })
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
 }
 
-exports.getMoodVibe = (req, res) => {
+exports.getMoodVibe = async (req, res) => {
   // TODO: Update Algorithm
   const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
-  db.query(sqlQuery, function (err, results) {
-    if (err) {
-        return res.send({ status: 1, message: err.message })
-    }
-
-    return res.send({ status: 200, message: 'Success', data: results})
-
-  })
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
 }
 
-exports.getSceneRhythm = (req, res) => {
+exports.getSceneRhythm = async (req, res) => {
   // TODO: Update Algorithm
-  const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
-  db.query(sqlQuery, function (err, results) {
-    if (err) {
-        return res.send({ status: 1, message: err.message })
-    }
-
-    return res.send({ status: 200, message: 'Success', data: results})
-
-  })
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
 }
 
-exports.getRecentlyPlayed = (req, res) => {
+exports.getRecentlyPlayed = async (req, res) => {
   // TODO: Update Algorithm
-  const sqlQuery = `SELECT * FROM Tracks ORDER BY RAND() LIMIT 20`;
-  db.query(sqlQuery, function (err, results) {
-    if (err) {
-        return res.send({ status: 1, message: err.message })
-    }
-
-    return res.send({ status: 200, message: 'Success', data: results})
-
-  })
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
 }
 

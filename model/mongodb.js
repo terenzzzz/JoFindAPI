@@ -45,7 +45,24 @@ if(connected){
     });
 }
 
-/* Function */
+/* Track Function */
+const getTracks = async () => {
+    try {
+        return await Track.find().populate("artist").populate("tags").populate("tags.tag").limit(50);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const getRandomTracks = async () => {
+    try {
+        return await Track.find().populate("artist").populate("tags").populate("tags.tag").limit(20);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+/* Data Prepare Function */
 const addArtist = async (artist)=>{
     try {
         var tags = JSON.parse(artist.tags)
@@ -141,6 +158,8 @@ const addTrack = async (track)=>{
 module.exports = {
     addArtist,
     addTrack,
-    addTag
+    addTag,
+    getTracks,
+    getRandomTracks
 }
 

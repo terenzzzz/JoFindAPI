@@ -3,6 +3,8 @@ const db = require('../db/index')
 const axios = require('axios');
 const { log } = require('../utils/logger');
 
+const mongodb = require("../model/mongodb")
+
 const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
 
 // 从SQlite文件添加数据到Mysql
@@ -560,3 +562,90 @@ exports.getTrackWiki = async (req, res) => {
 /**
  * Import Into MongoDB
  */
+exports.addArtistFromSqlToMongo = async (req,res) => {
+  try {
+    const sqlQuery = `select * from Artists`;
+    const result = await new Promise((resolve, reject) => {
+      db.query(sqlQuery, (err, result) => {
+        if (err) {
+          console.error('Error executing query:', err);
+          reject(err);
+          return;
+        }
+        resolve(result);
+      });
+    });
+  
+    for (const row of result) {   
+      try{
+        var savedId = await mongodb.addArtist(row)
+      }catch(e){
+        console.log(e);
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+exports.addTrackFromSqlToMongo = async (req,res) => {
+  try {
+    const sqlQuery = `select * from Tracks`;
+    const result = await new Promise((resolve, reject) => {
+      db.query(sqlQuery, (err, result) => {
+        if (err) {
+          console.error('Error executing query:', err);
+          reject(err);
+          return;
+        }
+        resolve(result);
+      });
+    });
+  
+    for (const row of result) {   
+      try{
+        var savedId = await mongodb.addTrack(row)
+      }catch(e){
+        console.log(e);
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+exports.addTrackTag = async (req,res) => {
+  try {
+    const sqlQuery = `select * from Artists`;
+    const result = await new Promise((resolve, reject) => {
+      db.query(sqlQuery, (err, result) => {
+        if (err) {
+          console.error('Error executing query:', err);
+          reject(err);
+          return;
+        }
+        resolve(result);
+      });
+    });
+  
+    for (const row of result) {   
+      if (row.tags) {
+        try {
+            const tags = JSON.parse(row.tags);
+            if (Array.isArray(tags) && tags.length > 0) {
+                tags.forEach(async tag => {
+                    
+                    var savedId = await mongodb.addTag(tag);
+                    console.log(savedId);
+                    
+                });
+            }
+        } catch (error) {
+            console.error('解析 JSON 字符串时出错：', error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}

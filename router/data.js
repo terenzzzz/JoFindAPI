@@ -16,6 +16,10 @@ router.get('/getArtistsCover', dataHandler.getArtistsCover)
 router.get('/getArtistsWiki', dataHandler.getArtistsWiki)
 router.get('/getTrackWiki', dataHandler.getTrackWiki)
 
+router.get('/addArtistFromSqlToMongo', dataHandler.addArtistFromSqlToMongo)
+router.get('/addTrackFromSqlToMongo', dataHandler.addTrackFromSqlToMongo)
+router.get('/addTrackTag', dataHandler.addTrackTag)
+
 
 
 //共享

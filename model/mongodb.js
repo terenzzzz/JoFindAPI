@@ -3,6 +3,11 @@ const MongoStore = require('connect-mongo')
 require('dotenv').config()
 
 
+/* Schemas */
+const {Artist} = require("./schema/artist");
+const {Tag} = require("./schema/tag");
+const {Track} = require("./schema/track");
+
 /* Connection Properties */
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
 const MONGO_USER = process.env.MONGO_USER || "admin";
@@ -39,3 +44,103 @@ if(connected){
         }
     });
 }
+
+/* Function */
+const addArtist = async (artist)=>{
+    try {
+        var tags = JSON.parse(artist.tags)
+
+        const newArtist = new Artist({
+            id_string: artist.artist_id,
+            name: artist.name,
+            tags: [],
+            familiarity: artist.familiarity,
+            hotness: artist.hotness,
+            ne_artist_id: artist.ne_artist_id,
+            avatar: artist.avatar,
+            summary: artist.summary,
+            published: artist.published
+        });
+
+        if(tags != null){
+            for (const tagInfo of tags) {
+                const tag = await Tag.findOne({ name: tagInfo.name });
+                if (tag) {
+                    newArtist.tags.push({
+                        tag: tag._id,
+                        count: tagInfo.count
+                    });
+                }
+            }
+        }
+        console.log(`Artist "${artist.name}" 已添加。`);
+        return await newArtist.save()
+        
+    }catch(e){
+        console.log(e);
+        return
+    }
+}
+
+const addTag = async (tag) => {
+    try {
+        const newTag = new Tag({
+            name: tag.name,
+            count: parseInt(tag.count)
+        });
+        const saveTag = await newTag.save();
+        console.log(`标签 "${tag.name}" 已添加。`);
+    } catch (error) {
+        console.error('添加标签时出错：', error);
+    }
+};
+
+const addTrack = async (track)=>{
+    try{
+        var tags = JSON.parse(track.tags)
+
+        const newTrack = new Track({
+            id_string: track.track_id,
+            name: track.title,
+            album: track.release,
+            artist: null,
+            year: track.year,
+            ne_song_id: track.ne_song_id,
+            cover: track.ne_song_cover,
+            duration: track.ne_duration,
+            lyric: track.ne_lyric,
+            tags: [],
+            summary: track.summary,
+            published: track.published,
+        });
+
+        const artist = await Artist.findOne({ name: track.artist_name });
+        if (artist) {
+            newTrack.artist = artist._id;
+        }
+
+        if(tags != null){
+            for (const tagInfo of tags) {
+                const tag = await Tag.findOne({ name: tagInfo.name });
+                if (tag) {
+                    newTrack.tags.push({
+                        tag: tag._id,
+                        count: tagInfo.count
+                    });
+                }
+            }
+        }
+        console.log(`Track "${track.title}" 已添加。`);
+        return await newTrack.save()
+
+    }catch(e){
+        console.log(e);
+    }
+}
+
+module.exports = {
+    addArtist,
+    addTrack,
+    addTag
+}
+

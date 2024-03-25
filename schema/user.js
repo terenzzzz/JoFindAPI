@@ -9,6 +9,7 @@ const joi = require('joi')
  * * pattern(正则表达式) 值必须符合正则表达式的规则 
  * */
 
+const name =  joi.string()
 // 邮箱号验证规则
 const email = joi.string().pattern(/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/)
 // 密码验证规则
@@ -24,5 +25,5 @@ const newPassword = joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{8,1
 // 注册和登录表单的验证规则对象 
 exports.user_schema = {
     // 表示需要对 req.body 中的数据进行验证
-    body: { email, password, confirmPassword,newPassword },
+    body: { name, email, password, confirmPassword,newPassword },
 }

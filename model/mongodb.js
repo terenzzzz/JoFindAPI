@@ -7,6 +7,8 @@ require('dotenv').config()
 const {Artist} = require("./schema/artist");
 const {Tag} = require("./schema/tag");
 const {Track} = require("./schema/track");
+const {User} = require("./schema/user");
+
 
 /* Connection Properties */
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
@@ -44,6 +46,40 @@ if(connected){
         }
     });
 }
+
+/* User Function */
+const getUsers = async () => {
+    try {
+        return await User.find();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const getUserByEmail = async (email) => {
+    try {
+        return await User.findOne({email: email});
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const addUser = async (user) => {
+    try {
+        const newUser = User(
+            {
+                name: user.name,
+                email: user.email,
+                password: user.password,
+                gender: user.gender,
+                age: user.age
+            }
+        )
+        return await newUser.save()
+    } catch (error) {
+        console.log(error);
+    }
+};
 
 /* Track Function */
 const getTracks = async () => {
@@ -184,6 +220,9 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    getUsers,
+    getUserByEmail,
+    addUser,
     addArtist,
     addTrack,
     getTracksByArtist,

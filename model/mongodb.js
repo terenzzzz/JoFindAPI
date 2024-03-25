@@ -54,6 +54,14 @@ const getTracks = async () => {
     }
 };
 
+const getTracksByArtist = async (artist) => {
+    try {
+        return await Track.find({artist: artist}).populate("artist").populate("tags").populate("tags.tag").limit(50);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getRandomTracks = async () => {
     // Update Algorithm
     try {
@@ -64,6 +72,15 @@ const getRandomTracks = async () => {
 };
 
 /* Artist Function */
+const getArtist = async (id) => {
+    // Update Algorithm
+    try {
+        return await Artist.findOne({_id:id}).populate("tags").populate("tags.tag");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getRandomArtists = async () => {
     // Update Algorithm
     try {
@@ -169,9 +186,11 @@ const addTrack = async (track)=>{
 module.exports = {
     addArtist,
     addTrack,
+    getTracksByArtist,
     addTag,
     getTracks,
     getRandomTracks,
-    getRandomArtists
+    getRandomArtists,
+    getArtist
 }
 

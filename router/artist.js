@@ -6,7 +6,9 @@ const router = express.Router()
 //导入处理函数
 const artistHandler = require('../router_handler/artist_handler')
 
-router.get('/getRecommArtist', artistHandler.gerRecommArtist)
+router.get('/getRecommArtist', artistHandler.getRecommArtist)
+
+router.get('/getArtist', artistHandler.getArtist)
 
 
 //共享

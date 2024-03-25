@@ -5,10 +5,22 @@ const axios = require('axios');
 const mongodb = require("../model/mongodb")
 
 
-// 获取Tracks
-exports.gerRecommArtist = async (req, res) => {
+// 获取RecommArtist
+exports.getRecommArtist = async (req, res) => {
   try{
     const artists = await mongodb.getRandomArtists()
+    return res.send({ status: 200, message: 'Success', data: artists})
+  }catch(err){
+    return res.send({ status: 1, message: err.message })
+  }
+};
+
+// 获取Artist
+exports.getArtist = async (req, res) => {
+  try{
+    console.log(req.query.id);
+    const artists = await mongodb.getArtist(req.query.id)
+    
     return res.send({ status: 200, message: 'Success', data: artists})
   }catch(err){
     return res.send({ status: 1, message: err.message })

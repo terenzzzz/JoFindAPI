@@ -1,1 +1,1 @@
-module.exports = { jwtSecretKey: 'LyricVibe-api', }
+module.exports = { jwtSecretKey: 'MusicBuddy-api', }

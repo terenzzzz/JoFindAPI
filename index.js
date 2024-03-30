@@ -37,16 +37,19 @@ const mongo = require('./model/mongodb')
 app.use(expressJWT({ secret: config.jwtSecretKey, algorithms: ['HS256'] }).unless({ path: [/^\/api\//] }))
 
 //登录模块
-const userRouter = require('./router/user')
+const authRouter = require('./router/auth')
 const trackRouter = require('./router/tracks')
 const artistRouter = require('./router/artist')
 const dataRouter = require('./router/data')
+const userRouter = require('./router/user')
 
+app.use('/api', dataRouter)
+app.use('/api', authRouter)
 
-app.use('/api', userRouter)
 app.use('/app', trackRouter)
 app.use('/app', artistRouter)
-app.use('/api', dataRouter)
+app.use('/app', userRouter)
+
 // app.use('/my', userInfoRouter)
 
 

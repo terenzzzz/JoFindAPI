@@ -48,6 +48,17 @@ if(connected){
 }
 
 /* User Function */
+const getUser = async (id) => {
+    try {
+        const user = await User.findOne({_id: id});
+        const { password, ...userWithoutPassword } = user.toObject();
+
+        return userWithoutPassword;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getUsers = async () => {
     try {
         return await User.find();
@@ -220,6 +231,7 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    getUser,
     getUsers,
     getUserByEmail,
     addUser,

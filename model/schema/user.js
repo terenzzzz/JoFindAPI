@@ -13,12 +13,8 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        gender: {
-            type: Number,
-            required: false
-        },
-        age: {
-            type: Number,
+        avatar: {
+            type: String,
             required: false
         }
     }, {

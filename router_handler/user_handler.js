@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
         return res.send({
             status: 200,
             message: '登录成功！',
-            idUser: user._id,
+            user_id: user._id,
             // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀 
             token: 'Bearer ' + tokenStr,
         })

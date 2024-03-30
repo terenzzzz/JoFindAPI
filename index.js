@@ -44,8 +44,8 @@ const dataRouter = require('./router/data')
 
 
 app.use('/api', userRouter)
-app.use('/api', trackRouter)
-app.use('/api', artistRouter)
+app.use('/app', trackRouter)
+app.use('/app', artistRouter)
 app.use('/api', dataRouter)
 // app.use('/my', userInfoRouter)
 

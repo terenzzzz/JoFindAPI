@@ -1,5 +1,8 @@
 // 导入 express 模块 
 var express = require('express');
+
+const path = require('path');
+
 // 创建 express 的服务器实例 
 var app = express();
 
@@ -10,6 +13,7 @@ app.use(cors())
 
 //配置解析 application/x-www-form-urlencoded 格式的表单数据的中间件
 app.use(express.urlencoded({ extended: false }))
+app.use(express.static(path.join(__dirname, '')));
 
 // 响应数据的中间件 
 app.use(function (req, res, next) {
@@ -29,19 +33,20 @@ app.use(function (req, res, next) {
 const config = require('./config')
 // 解析 token 的中间件 
 const expressJWT = require('express-jwt')
-
 const mongo = require('./model/mongodb')
 
 // 使用 .unless({ path: [/^\/api\//] }) 指定哪些接口不需要进行 Token 的身份认证
 // 将用户信息挂载到res.body.user上
 app.use(expressJWT({ secret: config.jwtSecretKey, algorithms: ['HS256'] }).unless({ path: [/^\/api\//] }))
+app.use('/public/upload', express.static('public/upload'));
 
 //登录模块
 const authRouter = require('./router/auth')
 const trackRouter = require('./router/tracks')
 const artistRouter = require('./router/artist')
 const dataRouter = require('./router/data')
-const userRouter = require('./router/user')
+const userRouter = require('./router/user');
+const { log } = require('./utils/logger');
 
 app.use('/api', dataRouter)
 app.use('/api', authRouter)
@@ -66,7 +71,8 @@ app.use((err, req, res, next) => {
         })
     }
     // 未知错误 
-    return res.cc(err)
+    console.log(err);
+    // return res.cc(err)
 })
 
 

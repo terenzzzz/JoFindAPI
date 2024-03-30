@@ -15,6 +15,9 @@ const mongodb = require('../model/mongodb')
 exports.register = async (req, res) => {
     // 密码规则: 8-16个字符，至少1个大写字母，1个小写字母和1个数字
     const requestUser = req.body
+    logger.log(requestUser)
+    logger.log(req.file)
+
     // 检测是否被占用
     try{
         var user = await mongodb.getUserByEmail(requestUser.email)
@@ -30,7 +33,8 @@ exports.register = async (req, res) => {
         var newUser = {
             name: requestUser.name,
             email: requestUser.email,
-            password: bcrypt.hashSync(requestUser.password, 10)
+            password: bcrypt.hashSync(requestUser.password, 10),
+            avatar: req.file.path
         }
 
         var savedUser = await mongodb.addUser(newUser)

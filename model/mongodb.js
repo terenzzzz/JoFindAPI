@@ -82,8 +82,7 @@ const addUser = async (user) => {
                 name: user.name,
                 email: user.email,
                 password: user.password,
-                gender: user.gender,
-                age: user.age
+                avatar: user.avatar,
             }
         )
         return await newUser.save()

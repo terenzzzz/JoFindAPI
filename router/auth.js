@@ -11,9 +11,11 @@ const expressJoi = require('@escook/express-joi')
 // 导入需要的验证规则对象
 const { user_schema } = require('../schema/user')
 
+const {upload} = require("../middlewares/multer")
 
 
-router.post('/register', expressJoi(user_schema), authHandler.register)
+
+router.post('/register', expressJoi(user_schema),upload.single('avatar'), authHandler.register)
 
 router.post('/login', expressJoi(user_schema), authHandler.login)
 

@@ -111,7 +111,15 @@ const getTracksByArtist = async (artist) => {
 const getRandomTracks = async () => {
     // Update Algorithm
     try {
-        return await Track.find().populate("artist").populate("tags").populate("tags.tag").limit(20);
+        // 随机获取20个文档
+        const randomTracks = await Track.aggregate([{ $sample: { size: 20 } }]);
+        
+        // 填充关联的数据
+        const populatedTracks = await Track.populate(randomTracks, { path: "artist" });
+        await Track.populate(populatedTracks, { path: "tags" });
+        await Track.populate(populatedTracks, { path: "tags.tag" });
+
+        return populatedTracks;
     } catch (error) {
         console.log(error);
     }
@@ -130,7 +138,16 @@ const getArtist = async (id) => {
 const getRandomArtists = async () => {
     // Update Algorithm
     try {
-        return await Artist.find().populate("tags").populate("tags.tag").limit(20);
+        // 随机获取20个文档
+        const randomArtists = await Artist.aggregate([{ $sample: { size: 20 } }]);
+        
+        // 填充关联的数据
+        const populatedArtists = await Artist.populate(randomArtists, { path: "artist" });
+        await Track.populate(populatedArtists, { path: "tags" });
+        await Track.populate(populatedArtists, { path: "tags.tag" });
+
+        return populatedArtists;
+
     } catch (error) {
         console.log(error);
     }

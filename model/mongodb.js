@@ -9,6 +9,7 @@ const {Tag} = require("./schema/tag");
 const {Track} = require("./schema/track");
 const {User} = require("./schema/user");
 const {PlayList} = require("./schema/playList");
+const {PlayListTrack} = require("./schema/playListTrack");
 
 
 /* Connection Properties */
@@ -58,6 +59,35 @@ const addPlayList = async (playList) => {
             user: playList.user
         })
         return await newPlayList.save()
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const addPlayListTrack = async (playListTrack) => {
+    try {
+        let newPlayListTrack = PlayListTrack({
+            playList: playListTrack.playList,
+            track: playListTrack.track,
+            user: playListTrack.user
+        })
+        return await newPlayListTrack.save()
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const deletePlayListTracks = async (user,playList,track) => {
+    try {
+        return await PlayListTrack.deleteOne({user: user, playList:playList,track:track})
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getPlayListTracks = async (user, playList) => {
+    try {
+        return await PlayListTrack.find({user: user, playList:playList})
     } catch (error) {
         console.log(error);
     }
@@ -280,6 +310,9 @@ const addTrack = async (track)=>{
 
 module.exports = {
     addPlayList,
+    addPlayListTrack,
+    deletePlayListTracks,
+    getPlayListTracks,
     getPlayLists,
     getPlayList,
     getUser,

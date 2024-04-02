@@ -8,6 +8,7 @@ const {Artist} = require("./schema/artist");
 const {Tag} = require("./schema/tag");
 const {Track} = require("./schema/track");
 const {User} = require("./schema/user");
+const {PlayList} = require("./schema/playList");
 
 
 /* Connection Properties */
@@ -45,6 +46,37 @@ if(connected){
             secret: process.env.STORE_SECRET || "secret",
         }
     });
+}
+
+/* PlayList Function */
+const addPlayList = async (playList) => {
+    try {
+        let newPlayList = PlayList({
+            name: playList.name,
+            description: playList.description,
+            cover: playList.cover,
+            user: playList.user
+        })
+        return await newPlayList.save()
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getPlayLists = async (user_id) => {
+    try {
+        return await PlayList.find({user: user_id})
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getPlayList = async (playList_id) => {
+    try {
+        return await PlayList.findOne({_id: playList_id})
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 /* User Function */
@@ -247,6 +279,9 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    addPlayList,
+    getPlayLists,
+    getPlayList,
     getUser,
     getUsers,
     getUserByEmail,

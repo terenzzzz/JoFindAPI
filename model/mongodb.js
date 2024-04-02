@@ -10,6 +10,7 @@ const {Track} = require("./schema/track");
 const {User} = require("./schema/user");
 const {PlayList} = require("./schema/playList");
 const {PlayListTrack} = require("./schema/playListTrack");
+const track = require('./schema/track');
 
 
 /* Connection Properties */
@@ -87,7 +88,9 @@ const deletePlayListTracks = async (user,playList,track) => {
 
 const getPlayListTracks = async (user, playList) => {
     try {
-        return await PlayListTrack.find({user: user, playList:playList})
+        const playListTracks = await PlayListTrack.find({user: user, playList:playList}).populate("track")
+        const tracksArray = playListTracks.map(item => item.track);
+        return tracksArray;
     } catch (error) {
         console.log(error);
     }

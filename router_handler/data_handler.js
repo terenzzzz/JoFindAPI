@@ -1,11 +1,11 @@
-const sqlite3 = require('sqlite3');
+// const sqlite3 = require('sqlite3');
 const db = require('../db/index')
 const axios = require('axios');
 const { log } = require('../utils/logger');
 
 const mongodb = require("../model/mongodb")
 
-const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
+// const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
 
 // 从SQlite文件添加数据到Mysql
 exports.queryMetadata = (req, res) => {

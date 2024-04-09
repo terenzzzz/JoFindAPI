@@ -47,6 +47,7 @@ const artistRouter = require('./router/artist')
 const dataRouter = require('./router/data')
 const userRouter = require('./router/user');
 const playListRouter = require('./router/playList');
+const tagRouter = require('./router/tag');
 
 
 app.use('/api', dataRouter)
@@ -56,6 +57,7 @@ app.use('/app', trackRouter)
 app.use('/app', artistRouter)
 app.use('/app', userRouter)
 app.use('/app', playListRouter)
+app.use('/app', tagRouter)
 
 // app.use('/my', userInfoRouter)
 

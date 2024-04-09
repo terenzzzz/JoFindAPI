@@ -50,6 +50,55 @@ if(connected){
     });
 }
 
+/* Tag Function */
+const getAllTags = async (limit) => {
+    try {
+        // 使用 MongoDB 的聚合框架进行操作
+        const tags = await Tag.aggregate([
+            {
+                $sort: { count: -1, name: 1 } // 先按 count 字段降序，再按 name 字段升序排序
+            },
+            {
+                $limit: parseInt(limit) // 添加限制
+            }
+        ]);
+
+        return tags;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getAllYears = async (limit) => {
+    try {
+        // 使用 MongoDB 的聚合框架进行操作
+        const years = await Track.aggregate([
+            {
+                $group: {
+                    _id: "$year",
+                    year: { $first: "$year" } // 添加返回的年份字段
+                }
+            },
+            {
+                $project: {
+                    _id: 0, // 不返回默认的 _id 字段
+                    year: 1 // 返回年份字段
+                }
+            },
+            {
+                $sort: { year: 1 } // 对年份进行升序排序
+            },
+            {
+                $limit: parseInt(limit) // 添加限制
+            }
+        ]);
+
+        return years;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 /* PlayList Function */
 const addPlayList = async (playList) => {
     try {
@@ -312,6 +361,8 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    getAllTags,
+    getAllYears,
     addPlayList,
     addPlayListTrack,
     deletePlayListTracks,

@@ -164,7 +164,7 @@ const getPlayList = async (playList_id) => {
 /* User Function */
 const getUser = async (id) => {
     try {
-        const user = await User.findOne({_id: id});
+        const user = await User.findOne({_id: id}).populate("tags.tag");
         const { password, ...userWithoutPassword } = user.toObject();
 
         return userWithoutPassword;
@@ -175,7 +175,7 @@ const getUser = async (id) => {
 
 const getUsers = async () => {
     try {
-        return await User.find();
+        return await User.find().populate("tags.tag");
     } catch (error) {
         console.log(error);
     }

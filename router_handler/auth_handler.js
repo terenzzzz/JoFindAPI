@@ -34,7 +34,8 @@ exports.register = async (req, res) => {
             name: requestUser.name,
             email: requestUser.email,
             password: bcrypt.hashSync(requestUser.password, 10),
-            avatar: req.file.path
+            avatar: req.file.path,
+            tags: []
         }
 
         var savedUser = await mongodb.addUser(newUser)

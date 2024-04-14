@@ -16,7 +16,20 @@ const userSchema = new mongoose.Schema({
         avatar: {
             type: String,
             required: false
-        }
+        },
+        tags: [
+            {
+                tag: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Tag',
+                    required: true
+                },
+                count: {
+                    type: Number,
+                    required: true
+                }
+            }
+        ]
     }, {
         timestamps: true
     }

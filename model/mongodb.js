@@ -10,7 +10,7 @@ const {Track} = require("./schema/track");
 const {User} = require("./schema/user");
 const {PlayList} = require("./schema/playList");
 const {PlayListTrack} = require("./schema/playListTrack");
-const track = require('./schema/track');
+const {History} = require("./schema/history");
 
 
 /* Connection Properties */
@@ -48,6 +48,49 @@ if(connected){
             secret: process.env.STORE_SECRET || "secret",
         }
     });
+}
+
+/* History Function */
+const getHistories = async (user) => {
+    try {
+        const history = await History.find({user: user})
+        .populate({
+            path: 'track',
+            populate: {
+                path: 'tags.tag',
+                model: 'Tag'
+            }
+        })
+        .populate({
+            path: 'artist',
+            populate: {
+                path: 'tags.tag',
+                model: 'Tag'
+            }
+        })
+        return history;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const addHistory = async (track,artist,user,dutation) => {
+    try {
+        const history = History(
+            {
+                track: track,
+                artist: artist,
+                user: user,
+                dutation: dutation
+            }
+        )
+
+        const savedHistory = await history.save()
+        
+        return savedHistory;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 /* Tag Function */
@@ -361,6 +404,8 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    getHistories,
+    addHistory,
     getAllTags,
     getAllYears,
     addPlayList,

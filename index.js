@@ -40,7 +40,7 @@ const mongo = require('./model/mongodb')
 app.use(expressJWT({ secret: config.jwtSecretKey, algorithms: ['HS256'] }).unless({ path: [/^\/api\//] }))
 app.use('/public/upload', express.static('public/upload'));
 
-//登录模块
+//路由模块
 const authRouter = require('./router/auth')
 const trackRouter = require('./router/tracks')
 const artistRouter = require('./router/artist')
@@ -48,6 +48,7 @@ const dataRouter = require('./router/data')
 const userRouter = require('./router/user');
 const playListRouter = require('./router/playList');
 const tagRouter = require('./router/tag');
+const historyRouter = require('./router/history');
 
 
 app.use('/api', dataRouter)
@@ -58,8 +59,9 @@ app.use('/app', artistRouter)
 app.use('/app', userRouter)
 app.use('/app', playListRouter)
 app.use('/app', tagRouter)
+app.use('/app', historyRouter)
 
-// app.use('/my', userInfoRouter)
+
 
 
 

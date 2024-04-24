@@ -75,6 +75,10 @@ const getHistories = async (user) => {
             populate: {
                 path: 'tags.tag',
                 model: 'Tag'
+            },
+            populate: {
+                path: 'artist',
+                model: 'Artist'
             }
         })
         .populate({

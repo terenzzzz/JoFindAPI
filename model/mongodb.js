@@ -36,18 +36,34 @@ db.once('open', async () => {
 });
 
 /* Session Storage */
-let store;
-if(connected){
-    // Use Session schema from connect-mongo which aligns with express-session setup.
-    store = new MongoStore.create({
-        client: db,
-        dbName: process.env.MONGO_DBNAME,
-        collection: 'sessions',
-        expires: 1000 * 60 * 60 * 48,
-        crypto: {
-            secret: process.env.STORE_SECRET || "secret",
-        }
-    });
+// let store;
+// if(connected){
+//     // Use Session schema from connect-mongo which aligns with express-session setup.
+//     store = new MongoStore.create({
+//         client: db,
+//         dbName: process.env.MONGO_DBNAME,
+//         collection: 'sessions',
+//         expires: 1000 * 60 * 60 * 48,
+//         crypto: {
+//             secret: process.env.STORE_SECRET || "secret",
+//         }
+//     });
+// }
+
+/* Search Function */
+const search = async (keyword) => {
+    try {
+        // 创建正则表达式对象，用于模糊匹配
+        console.log(keyword);
+        const regex = new RegExp(keyword, 'i');
+
+        // 使用正则表达式进行模糊匹配
+        const tracks = await Track.find({ name: regex }).limit(100);
+
+        return tracks;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 /* History Function */
@@ -404,6 +420,7 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    search,
     getHistories,
     addHistory,
     getAllTags,

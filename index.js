@@ -49,11 +49,13 @@ const userRouter = require('./router/user');
 const playListRouter = require('./router/playList');
 const tagRouter = require('./router/tag');
 const historyRouter = require('./router/history');
+const searchRouter = require('./router/search');
 
 
 app.use('/api', dataRouter)
 app.use('/api', authRouter)
 
+app.use('/app', searchRouter)
 app.use('/app', trackRouter)
 app.use('/app', artistRouter)
 app.use('/app', userRouter)

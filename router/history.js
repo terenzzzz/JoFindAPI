@@ -6,5 +6,6 @@ const router = express.Router()
 const historyHandler = require('../router_handler/history_handler')
 
 router.get('/getHistories', historyHandler.getHistories)
+router.get('/getLastHistory', historyHandler.getLastHistory)
 
 module.exports = router

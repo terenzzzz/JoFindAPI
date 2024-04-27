@@ -6,6 +6,7 @@ const router = express.Router()
 //导入处理函数
 const tracksHandler = require('../router_handler/tracks_handler')
 
+router.get('/getRandomTracks', tracksHandler.getRandomTracks)
 
 router.get('/getTracks', tracksHandler.getTracks)
 router.get('/getDailyRecomm', tracksHandler.getDailyRecomm)

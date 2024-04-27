@@ -4,6 +4,15 @@ const logger = require('../utils/logger');
 const axios = require('axios');
 const mongodb = require("../model/mongodb")
 
+exports.getRandomTracks = async (req, res) => {
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
+}
+
 // 获取Tracks
 exports.getTracks = async (req, res) => {
   try{
@@ -64,9 +73,11 @@ exports.getSceneRhythm = async (req, res) => {
 }
 
 exports.getRecentlyPlayed = async (req, res) => {
-  // TODO: Update Algorithm
   try{
-    const tracks = await mongodb.getRandomTracks()
+    const histories = await mongodb.getHistories(req.user._id);
+    const reversedHistories = histories.reverse(); // 将历史记录数组顺序颠倒
+    
+    const tracks = reversedHistories.map(history => history.track);
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
     return res.send({ status: 1, message: err.message })

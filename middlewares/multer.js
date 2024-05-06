@@ -4,7 +4,7 @@
  */
 const multer = require('multer');
 
-
+const generalUpload = multer();
 /**
  * Set Up Files Storage Path
  * @author Zhicong Jiang <zjiang34@sheffield.ac.uk>
@@ -42,5 +42,6 @@ var playlist = multer({ storage: uploadStorage });
 
 module.exports = {
     avatar,
-    playlist
+    playlist,
+    generalUpload
 }

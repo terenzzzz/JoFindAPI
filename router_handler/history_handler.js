@@ -1,16 +1,6 @@
 const mongodb = require("../model/mongodb")
 
 
-// 获取RecommArtist
-exports.getHistories = async (req, res) => {
-  try{
-    const histories = await mongodb.getHistories(req.user._id)
-    return res.send({ status: 200, message: 'Success', data: histories})
-  }catch(err){
-    return res.send({ status: 1, message: err.message })
-  }
-};
-
 exports.getLastHistory = async (req, res) => {
   try {
     // 获取用户的历史记录
@@ -28,5 +18,39 @@ exports.getLastHistory = async (req, res) => {
   } catch (err) {
     // 如果出现错误，返回错误信息
     return res.send({ status: 1, message: err.message });
+  }
+};
+
+
+exports.getHistories = async (req, res) => {
+  try{
+    var startDate = req.query.startDate;
+    var endDate = req.query.endDate;
+    if (startDate === undefined || endDate === undefined) {
+      startDate = new Date('1971-01-01').toISOString(); 
+      endDate = new Date().toISOString();
+    } else{
+      startDate = new Date('startDate').toISOString(); 
+      endDate = new Date(endDate + "T23:59:59Z").toISOString(); 
+    }
+    const histories = await mongodb.getHistories(req.user._id,startDate,endDate)
+    return res.send({ status: 200, message: 'Success', data: histories})
+  }catch(err){
+    return res.send({ status: 1, message: err.message })
+  }
+};
+
+exports.addHistory = async (req, res) => {
+  try{
+    let history = {
+      artist: req.body.artist,
+      track: req.body.track,
+      duration: req.body.duration,
+      user: req.user._id
+    }
+    const newHistory = await mongodb.addHistory(history)
+    return res.send({ status: 200, message: 'Success', data: newHistory})
+  }catch(err){
+      return res.send({ status: 1, message: err.message })
   }
 };

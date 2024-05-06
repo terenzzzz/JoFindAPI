@@ -67,9 +67,13 @@ const search = async (keyword) => {
 }
 
 /* History Function */
-const getHistories = async (user) => {
+const getHistories = async (user,startDate,endDate) => {
+    
     try {
-        const history = await History.find({user: user})
+        const history = await History.find({
+            user: user,
+            createdAt: { $gte: startDate, $lte: endDate }
+        })
         .populate({
             path: 'track',
             populate: {
@@ -87,26 +91,24 @@ const getHistories = async (user) => {
                 path: 'tags.tag',
                 model: 'Tag'
             }
-        })
+        });
         return history;
     } catch (error) {
         console.log(error);
     }
 }
 
-const addHistory = async (track,artist,user,dutation) => {
+const addHistory = async (newHistory) => {
     try {
         const history = History(
             {
-                track: track,
-                artist: artist,
-                user: user,
-                dutation: dutation
+                track: newHistory.track,
+                artist: newHistory.artist,
+                user: newHistory.user,
+                duration: parseInt(newHistory.duration) || 0
             }
         )
-
         const savedHistory = await history.save()
-        
         return savedHistory;
     } catch (error) {
         console.log(error);

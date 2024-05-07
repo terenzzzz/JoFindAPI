@@ -26,13 +26,6 @@ exports.getHistories = async (req, res) => {
   try{
     var startDate = req.query.startDate;
     var endDate = req.query.endDate;
-    if (startDate === undefined || endDate === undefined) {
-      startDate = new Date('1971-01-01').toISOString(); 
-      endDate = new Date().toISOString();
-    } else{
-      startDate = new Date('startDate').toISOString(); 
-      endDate = new Date(endDate + "T23:59:59Z").toISOString(); 
-    }
     const histories = await mongodb.getHistories(req.user._id,startDate,endDate)
     return res.send({ status: 200, message: 'Success', data: histories})
   }catch(err){

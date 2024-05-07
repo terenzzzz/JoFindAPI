@@ -68,7 +68,15 @@ const search = async (keyword) => {
 
 /* History Function */
 const getHistories = async (user,startDate,endDate) => {
-    
+    if (startDate === undefined || endDate === undefined) {
+        startDate = new Date('1971-01-01').toISOString();
+        endDate = new Date().toISOString();
+    } else {
+        startDate = new Date(startDate).toISOString();
+        endDate = new Date(endDate + "T23:59:59Z").toISOString();
+    }
+    console.log(startDate, endDate);
+ 
     try {
         const history = await History.find({
             user: user,

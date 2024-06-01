@@ -19,10 +19,6 @@ const trackSchema = new mongoose.Schema({
             type: String,
             required: false
         },
-        ne_song_id: {
-            type: String,
-            required: false
-        },
         cover: {
             type: String,
             required: false

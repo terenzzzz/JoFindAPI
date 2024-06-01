@@ -75,6 +75,7 @@ exports.login = async (req, res) => {
             user_id: user._id,
             // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀 
             token: 'Bearer ' + tokenStr,
+            spotify_refresh_token: user.spotify_refresh_token
         })
 
     }else{

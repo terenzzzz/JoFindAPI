@@ -14,6 +14,7 @@ router.get('/spotifyRefreshToken', spotifyHandler.refresh_token)
 router.get('/getRecentlyPlayed', spotifyHandler.recentlyPlayed)
 router.get('/getTopTracks', spotifyHandler.topTracks)
 router.get('/getTopArtists', spotifyHandler.topArtists)
+router.get('/search', spotifyHandler.search)
 
 
 

@@ -292,6 +292,25 @@ const addUser = async (user) => {
     }
 };
 
+const updateSpotifyRefreshToken = async (id, token) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { spotify_refresh_token: token },
+            { new: true } // 返回更新后的文档
+          );
+      
+          if (!updatedUser) {
+            throw new Error('User not found');
+          }
+      
+          console.log('Spotify refresh token updated successfully');
+          return updatedUser;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 /* Track Function */
 const getTracks = async () => {
     try {
@@ -478,6 +497,7 @@ module.exports = {
     getUsers,
     getUserByEmail,
     addUser,
+    updateSpotifyRefreshToken,
     addArtist,
     addTrack,
     getTracksByArtist,

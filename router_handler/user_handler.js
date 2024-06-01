@@ -12,3 +12,15 @@ exports.getUser = async (req, res) => {
         return res.send({ status: 1, message: err.message })
     }
 };
+
+exports.updateSpotifyRefreshToken = async (req, res) => {
+    try{
+        let user_id = req.user._id
+        let token = req.body.refreshToken
+        console.log("token: " + token);
+        const user = await mongodb.updateSpotifyRefreshToken(user_id,token)
+        return res.send({ status: 200, message: 'Success', data: user})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};

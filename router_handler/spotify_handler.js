@@ -107,8 +107,8 @@ exports.refresh_token = async (req, res) => {
 
     const access_token = response.data.access_token;
     res.send({
-      'access_token': access_token,
-      'refresh_token': refresh_token
+      'access_token': 'Bearer ' + access_token,
+      'refresh_token': 'Bearer ' + refresh_token
     });
   } catch (error) {
     console.error('Error refreshing token:', error);

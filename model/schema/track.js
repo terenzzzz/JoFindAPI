@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 
 
 const trackSchema = new mongoose.Schema({
-        id_string: {
-            type: String,
-            required: true
-        },
         name: {
             type: String,
             required: true

@@ -11,6 +11,10 @@ router.get('/spotifyLogin', spotifyHandler.login)
 router.get('/spotifyCallback', spotifyHandler.callback)
 router.get('/spotifyRefreshToken', spotifyHandler.refresh_token)
 
+router.get('/getRecentlyPlayed', spotifyHandler.recentlyPlayed)
+router.get('/getTopTracks', spotifyHandler.topTracks)
+router.get('/getTopArtists', spotifyHandler.topArtists)
+
 
 
 //共享

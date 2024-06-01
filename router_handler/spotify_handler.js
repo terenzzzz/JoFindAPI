@@ -4,6 +4,7 @@ const mongodb = require("../model/mongodb");
 const querystring = require('querystring');
 const crypto = require('crypto');
 const express = require('express');
+const { log } = require('console');
 const router = express.Router();
 
 const client_id = process.env.SPOTIFY_CLIENT_ID;
@@ -23,13 +24,17 @@ exports.login = async (req, res) => {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  const scope = 'user-read-private user-read-email';
+  const scope = 'user-read-private user-read-email user-read-playback-state '
+  + 'user-read-recently-played user-top-read user-follow-read user-follow-modify '
+  +'user-read-currently-playing playlist-read-private playlist-read-collaborative playlist-modify-public'
+
   const queryString = querystring.stringify({
     response_type: 'code',
     client_id: client_id,
     scope: scope,
     redirect_uri: redirect_uri,
-    state: state
+    state: state,
+    show_dialog: true // 提示显示登录对话框
   });
 
   res.redirect('https://accounts.spotify.com/authorize?' + queryString);
@@ -64,11 +69,11 @@ exports.callback = async (req, res) => {
       const refresh_token = 'Bearer ' + response.data.refresh_token;
 
       // 使用访问令牌访问Spotify Web API
-      const userInfo = await axios.get('https://api.spotify.com/v1/me', {
-        headers: { 'Authorization': access_token }
-      });
+      // const userInfo = await axios.get('https://api.spotify.com/v1/me', {
+      //   headers: { 'Authorization': access_token }
+      // });
 
-      console.log(userInfo.data);
+      // console.log(userInfo.data);
 
       // 将令牌传递给浏览器以便从前端进行请求
       res.redirect('http://localhost:8080/#/profile?' +
@@ -108,5 +113,86 @@ exports.refresh_token = async (req, res) => {
   } catch (error) {
     console.error('Error refreshing token:', error);
     res.status(500).send('Failed to refresh token');
+  }
+};
+
+exports.recentlyPlayed = async (req, res) => {
+  const accessToken = req.query.access_token || req.headers.authorization;
+
+  if (!accessToken) {
+    return res.status(400).send({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/player/recently-played', {
+      headers: { 'Authorization': accessToken }
+    });
+    if (response.status === 200 && response.data) {
+      let data = response.data.items
+      // 处理Spotify返回的数据
+      return res.status(200).send(data);
+    } else if (response.status === 204) {
+      // No content, meaning no song is currently playing
+      return res.status(204).send({ message: 'No content, no song is currently playing' });
+    } else {
+      return res.status(response.status).send({ error: 'Failed to get currently playing track' });
+    }
+  } catch (error) {
+    console.error('Error fetching currently playing track:', error);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+exports.topTracks = async (req, res) => {
+  const accessToken = req.query.access_token || req.headers.authorization;
+
+  if (!accessToken) {
+    return res.status(400).send({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+      headers: { 'Authorization': accessToken }
+    });
+    if (response.status === 200 && response.data) {
+      let data = response.data.items
+      // 处理Spotify返回的数据
+      return res.status(200).send(data);
+    } else if (response.status === 204) {
+      // No content, meaning no song is currently playing
+      return res.status(204).send({ message: 'No content, no song is currently playing' });
+    } else {
+      return res.status(response.status).send({ error: 'Failed to get currently playing track' });
+    }
+  } catch (error) {
+    console.error('Error fetching currently playing track:', error);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+exports.topArtists = async (req, res) => {
+  const accessToken = req.query.access_token || req.headers.authorization;
+
+  if (!accessToken) {
+    return res.status(400).send({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
+      headers: { 'Authorization': accessToken }
+    });
+    if (response.status === 200 && response.data) {
+      let data = response.data.items
+      // 处理Spotify返回的数据
+      return res.status(200).send(data);
+    } else if (response.status === 204) {
+      // No content, meaning no song is currently playing
+      return res.status(204).send({ message: 'No content, no song is currently playing' });
+    } else {
+      return res.status(response.status).send({ error: 'Failed to get currently playing track' });
+    }
+  } catch (error) {
+    console.error('Error fetching currently playing track:', error);
+    return res.status(500).send({ error: 'Internal Server Error' });
   }
 };

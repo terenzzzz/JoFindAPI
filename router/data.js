@@ -20,6 +20,9 @@ router.get('/addArtistFromSqlToMongo', dataHandler.addArtistFromSqlToMongo)
 router.get('/addTrackFromSqlToMongo', dataHandler.addTrackFromSqlToMongo)
 router.get('/addTrackTag', dataHandler.addTrackTag)
 
+// Test
+router.get('/getRandomTracks', dataHandler.getRandomTracks)
+router.get('/getRecommArtist', dataHandler.getRecommArtist)
 
 
 //共享

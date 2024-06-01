@@ -9,7 +9,7 @@ exports.getRandomTracks = async (req, res) => {
     const tracks = await mongodb.getRandomTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
   }
 }
 
@@ -19,7 +19,7 @@ exports.getTracks = async (req, res) => {
     const tracks = await mongodb.getTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
   }
 };
 
@@ -28,7 +28,17 @@ exports.getTracksByArtist = async (req, res) => {
     const tracks = await mongodb.getTracksByArtist(req.query.artist)
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
+  }
+};
+
+
+exports.getTrackById = async (req, res) => {
+  try{
+    const track = await mongodb.getTrackById(req.query.track)
+    return res.send({ status: 200, message: 'Success', data: track})
+  }catch(e){
+    return res.send({ status: 1, message: e.message })
   }
 };
 
@@ -38,7 +48,7 @@ exports.getDailyRecomm = async (req, res) => {
     const tracks = await mongodb.getRandomTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
   }
 }
 
@@ -48,7 +58,7 @@ exports.getResonanace = async (req, res) => {
     const tracks = await mongodb.getRandomTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
   }
 }
 
@@ -68,7 +78,7 @@ exports.getSceneRhythm = async (req, res) => {
     const tracks = await mongodb.getRandomTracks()
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
   }
 }
 
@@ -80,7 +90,7 @@ exports.getRecentlyPlayed = async (req, res) => {
     const tracks = reversedHistories.map(history => history.track);
     return res.send({ status: 200, message: 'Success', data: tracks})
   }catch(e){
-    return res.send({ status: 1, message: err.message })
+    return res.send({ status: 1, message: e.message })
   }
 }
 

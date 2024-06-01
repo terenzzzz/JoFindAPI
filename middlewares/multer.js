@@ -30,7 +30,7 @@ var avatarStorage = multer.diskStorage({
         var original = file.originalname;
         var file_extension = original.split(".");
         // Make the file name the date + the file extension
-        filename =  req.query.email + '.' + file_extension[file_extension.length-1];
+        filename =  req.body.email + '.' + file_extension[file_extension.length-1];
         cb(null, filename);
     }
 });

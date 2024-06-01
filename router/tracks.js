@@ -15,6 +15,7 @@ router.get('/getMoodVibe', tracksHandler.getMoodVibe)
 router.get('/getSceneRhythm', tracksHandler.getSceneRhythm)
 router.get('/getRecentlyPlayed', tracksHandler.getRecentlyPlayed)
 router.get('/getTracksByArtist', tracksHandler.getTracksByArtist)
+router.get('/getTrackById', tracksHandler.getTrackById)
 
 
 //共享

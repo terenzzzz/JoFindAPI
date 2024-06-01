@@ -58,7 +58,15 @@ const search = async (keyword) => {
         const regex = new RegExp(keyword, 'i');
 
         // 使用正则表达式进行模糊匹配
-        const tracks = await Track.find({ name: regex }).limit(100);
+        const tracks = await Track.find({ name: regex })
+        .populate({
+            path: 'artist',
+            populate: {
+                path: 'tags.tag'
+            }
+        })
+        .populate('tags.tag')
+        .limit(100);
 
         return tracks;
     } catch (error) {
@@ -125,15 +133,22 @@ const addHistory = async (newHistory) => {
 /* Tag Function */
 const getAllTags = async (limit) => {
     try {
-        // 使用 MongoDB 的聚合框架进行操作
-        const tags = await Tag.aggregate([
+        // 聚合管道数组
+        const pipeline = [
             {
                 $sort: { count: -1, name: 1 } // 先按 count 字段降序，再按 name 字段升序排序
-            },
-            {
-                $limit: parseInt(limit) // 添加限制
             }
-        ]);
+        ];
+
+        // 如果提供了 limit 参数，则添加 $limit 阶段
+        if (limit) {
+            pipeline.push({
+                $limit: parseInt(limit)
+            });
+        }
+
+        // 使用聚合框架执行聚合管道
+        const tags = await Tag.aggregate(pipeline);
 
         return tags;
     } catch (error) {
@@ -289,6 +304,21 @@ const getTracks = async () => {
 const getTracksByArtist = async (artist) => {
     try {
         return await Track.find({artist: artist}).populate("artist").populate("tags").populate("tags.tag").limit(50);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const getTrackById = async (track) => {
+    try {
+        return await Track.findById(track)
+            .populate({
+                path: 'artist',
+                populate: {
+                    path: 'tags.tag'
+                }
+            })
+            .populate('tags.tag');
     } catch (error) {
         console.log(error);
     }
@@ -451,6 +481,7 @@ module.exports = {
     addArtist,
     addTrack,
     getTracksByArtist,
+    getTrackById,
     addTag,
     getTracks,
     getRandomTracks,

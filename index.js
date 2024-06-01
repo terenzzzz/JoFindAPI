@@ -12,7 +12,8 @@ const cors = require('cors')
 app.use(cors())
 
 //配置解析 application/x-www-form-urlencoded 格式的表单数据的中间件
-app.use(express.urlencoded({ extended: false }))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '')));
 
 // 响应数据的中间件 
@@ -50,6 +51,7 @@ const playListRouter = require('./router/playList');
 const tagRouter = require('./router/tag');
 const historyRouter = require('./router/history');
 const searchRouter = require('./router/search');
+const spotifyRouter = require('./router/spotify');
 
 
 app.use('/api', dataRouter)
@@ -62,6 +64,7 @@ app.use('/app', userRouter)
 app.use('/app', playListRouter)
 app.use('/app', tagRouter)
 app.use('/app', historyRouter)
+app.use('/app', spotifyRouter)
 
 
 

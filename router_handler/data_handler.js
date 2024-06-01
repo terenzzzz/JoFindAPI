@@ -5,6 +5,24 @@ const { log } = require('../utils/logger');
 
 const mongodb = require("../model/mongodb")
 
+exports.getRandomTracks = async (req, res) => {
+  try{
+    const tracks = await mongodb.getRandomTracks()
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: err.message })
+  }
+}
+
+exports.getRecommArtist = async (req, res) => {
+  try{
+    const artists = await mongodb.getRandomArtists()
+    return res.send({ status: 200, message: 'Success', data: artists})
+  }catch(err){
+    return res.send({ status: 1, message: err.message })
+  }
+};
+
 // const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
 
 // 从SQlite文件添加数据到Mysql

@@ -5,7 +5,8 @@ const mongodb = require("../model/mongodb")
 // 获取RecommArtist
 exports.getAllTags = async (req, res) => {
   try{
-    const tags = await mongodb.getAllTags(req.query.limit)
+    const limit = req.query.limit? req.query.limit : 100
+    const tags = await mongodb.getAllTags(limit)
     return res.send({ status: 200, message: 'Success', data: tags})
   }catch(err){
     return res.send({ status: 1, message: err.message })

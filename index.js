@@ -1,5 +1,6 @@
 // 导入 express 模块 
 var express = require('express');
+const cookieParser = require('cookie-parser');
 
 const path = require('path');
 
@@ -10,11 +11,12 @@ var app = express();
 const cors = require('cors')
 // 将 cors 注册为全局中间件 
 app.use(cors())
-
+app.use(cookieParser());
 //配置解析 application/x-www-form-urlencoded 格式的表单数据的中间件
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '')));
+
 
 // 响应数据的中间件 
 app.use(function (req, res, next) {
@@ -64,10 +66,7 @@ app.use('/app', userRouter)
 app.use('/app', playListRouter)
 app.use('/app', tagRouter)
 app.use('/app', historyRouter)
-app.use('/app', spotifyRouter)
-
-
-
+app.use('/api', spotifyRouter)
 
 
 // 错误级别中间件
@@ -89,7 +88,7 @@ app.use((err, req, res, next) => {
 
 // 部署使用
 // 开启服务
-const host = '0.0.0.0';
+const host = 'localhost';
 const port = process.env.PORT || 6906;
 
 

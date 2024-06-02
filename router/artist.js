@@ -9,6 +9,7 @@ const artistHandler = require('../router_handler/artist_handler')
 router.get('/getRecommArtist', artistHandler.getRecommArtist)
 
 router.get('/getArtist', artistHandler.getArtist)
+router.get('/getSimilarArtists', artistHandler.getSimilarArtists)
 
 
 //共享

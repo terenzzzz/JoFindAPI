@@ -201,7 +201,7 @@ exports.topArtists = async (req, res) => {
 exports.search = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
 
-  const keywork = req.query.q
+  const keyword = req.query.q
   const type = req.query.type
 
   if (!accessToken) {
@@ -209,11 +209,13 @@ exports.search = async (req, res) => {
   }
 
   try {
-    const response = await axios.get(`https://api.spotify.com/v1/search?q=${keywork} sex&type=${type}`, {
+    const response = await axios.get(`https://api.spotify.com/v1/search?q=${keyword}&type=${type}`, {
       headers: { 'Authorization': accessToken }
     });
     if (response.status === 200 && response.data) {
+
       let data = response.data.tracks.items[0]
+      console.log(data);
       // 处理Spotify返回的数据
       return res.status(200).send(data);
     } else if (response.status === 204) {
@@ -223,7 +225,7 @@ exports.search = async (req, res) => {
       return res.status(response.status).send({ error: 'Failed to get currently playing track' });
     }
   } catch (error) {
-    console.error('Error fetching currently playing track:', error);
+    console.error('Error fetching search result:', error);
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };

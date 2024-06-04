@@ -23,6 +23,8 @@ router.get('/addTrackTag', dataHandler.addTrackTag)
 // Test
 router.get('/getRandomTracks', dataHandler.getRandomTracks)
 router.get('/getRecommArtist', dataHandler.getRecommArtist)
+router.get('/updateLyricsFromThirdParty', dataHandler.updateLyricsFromThirdParty)
+
 
 
 //共享

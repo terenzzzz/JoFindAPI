@@ -23,6 +23,65 @@ exports.getRecommArtist = async (req, res) => {
   }
 };
 
+
+exports.updateLyricsFromThirdParty = async (req, res) => {
+  try {
+    const updated = await mongodb.updateLyric("65ffb31ac1ab936c97885a71","123")
+    
+      //获取所有的曲目
+      const tracks = await mongodb.getAllTracks();
+      let success = 0
+      let failed = 0
+      let length = tracks.length
+      
+      //遍历所有曲目
+      for (let track of tracks) {
+          const artistName = track.artist.name;
+          const trackName = track.name;
+          
+          // 调用第三方API获取歌词
+          const api = `https://api.lyrics.ovh/v1/${artistName}/${trackName}`;
+          
+          try {
+            
+            const response = await axios.get(api);
+            if(response.data.lyrics){
+              const newLyric = response.data.lyrics;
+
+              // 更新曲目的歌词
+              await mongodb.updateLyric(track._id, newLyric)
+              success++
+            }
+            
+          } catch (apiError) {
+              // console.error(`Error fetching lyrics for ${artistName} - ${trackName}: ${apiError.message}`);
+              // 这里可以选择是否继续更新其他曲目
+              failed++
+          }
+          console.log(`${success+failed} / ${length} with success: ${success} : failed: ${failed} ${artistName} - ${trackName}`);
+      }
+
+      return res.send({ status: 200, message: 'Success', data: updated });
+
+      
+  } catch (err) {
+      // 捕获和处理错误
+      return res.send({ status: 1, message: err.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 // const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
 
 // 从SQlite文件添加数据到Mysql

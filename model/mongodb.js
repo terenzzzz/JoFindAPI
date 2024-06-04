@@ -312,6 +312,28 @@ const updateSpotifyRefreshToken = async (id, token) => {
 };
 
 /* Track Function */
+const getAllTracks = async () => {
+    try {
+        return await Track.find().populate("artist");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const updateLyric = async (trackId, newLyric) => {
+    try {
+        const updatedTrack = await Track.findByIdAndUpdate(
+            trackId, 
+            { $set: { lyric: newLyric } }, 
+            { new: true, useFindAndModify: false }
+        );
+        return updatedTrack;
+    } catch (error) {
+        console.error('Error updating track:', error);
+        throw error;
+    }
+};
+
 const getTracks = async () => {
     try {
         return await Track.find().populate("artist").populate("tags").populate("tags.tag").limit(50);
@@ -499,6 +521,8 @@ module.exports = {
     addUser,
     updateSpotifyRefreshToken,
     addArtist,
+    updateLyric,
+    getAllTracks,
     addTrack,
     getTracksByArtist,
     getTrackById,

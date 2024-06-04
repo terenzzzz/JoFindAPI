@@ -51,28 +51,46 @@ db.once('open', async () => {
 // }
 
 /* Search Function */
-const search = async (keyword) => {
+const search = async (keyword, types, limit) => {
     try {
-        // 创建正则表达式对象，用于模糊匹配
-        console.log(keyword);
-        const regex = new RegExp(keyword, 'i');
+      let tracks = [];
+      let artists = [];
+      let lyrics = [];
 
-        // 使用正则表达式进行模糊匹配
-        const tracks = await Track.find({ name: regex })
-        .populate({
+  
+      // 创建正则表达式对象，用于模糊匹配
+      const regex = new RegExp(keyword, 'i');
+  
+      // 根据types数组执行相应的搜索操作
+      if (types.includes('tracks')) {
+        tracks = await Track.find({ name: regex })
+          .populate({
             path: 'artist',
-            populate: {
-                path: 'tags.tag'
-            }
-        })
-        .populate('tags.tag')
-        .limit(100);
+          })
+          .limit(limit);
+      }
+  
+      if (types.includes('artists')) {
+        artists = await Artist.find({ name: regex }).limit(limit);
+      }
 
-        return tracks;
+      if (types.includes('lyrics')) {
+        lyrics = await Track.find({ lyric: { $regex: regex } })
+          .populate({
+            path: 'artist',
+          })
+          .limit(limit);
+      }
+  
+      return {
+        tracks,
+        artists,
+        lyrics
+      };
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
-}
+  };
 
 /* History Function */
 const getHistories = async (user,startDate,endDate) => {

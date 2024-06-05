@@ -5,6 +5,7 @@ const querystring = require('querystring');
 const crypto = require('crypto');
 const express = require('express');
 const { log } = require('console');
+const artist = require('../model/schema/artist');
 const router = express.Router();
 
 const client_id = process.env.SPOTIFY_CLIENT_ID;
@@ -229,3 +230,79 @@ exports.search = async (req, res) => {
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };
+
+exports.getSpotifyTrackById = async (req, res) => {
+  const accessToken = req.query.access_token || req.headers.authorization;
+
+  if (!accessToken) {
+    return res.status(400).send({ error: 'Access token is required' });
+  }
+
+  try {
+    const id = req.query.id
+    let artist = {}
+    let track = {}
+    let lyric = ""
+    // 查询Spotify中track的元数据
+    const response = await axios.get(`https://api.spotify.com/v1/tracks/${id}`, {
+      headers: { 'Authorization': accessToken }
+    });
+    if (response.status === 200 && response.data) {
+      let data = response.data
+      let artistHref = data.artists[0].href // 歌手链接
+      // 根据查询到的track中的歌手链接获取歌手信息
+      const artistResponse = await axios.get(artistHref, {
+        headers: { 'Authorization': accessToken }
+      });
+      if (artistResponse.status === 200 && artistResponse.data) {
+        let artistData = artistResponse.data
+        artist = {
+          id: artistData.id,
+          avatar: artistData.images[0].url,
+          tags: artistData.genres.map((tag) => ({tag:{
+            name: tag,
+          }})),
+          name: artistData.name,
+          hotness: artistData.popularity/100,
+          external_urls: artistData.external_urls.spotify
+        }
+      }
+      // 查询歌词
+      lyric = await getLyric(artist.name, data.name)
+
+      // 结构化track
+      track = {
+        id: data.id,
+        uri: data.uri,
+        name: data.name,
+        artist: artist,
+        cover: data.album.images[0].url,
+        album: data.album.name,
+        duration: data.duration_ms,
+        year: data.album.release_date,
+        external_urls: data.external_urls.spotify,
+        lyric: lyric
+      }
+      // 处理Spotify返回的数据
+      return res.status(200).send(track);
+    } else {
+      return res.status(response.status).send({ error: 'Failed to get currently playing track' });
+    }
+  } catch (error) {
+    console.error('Error fetching currently playing track:', error);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+async function getLyric(artistName,trackName){
+  const api = `https://api.lyrics.ovh/v1/${artistName}/${trackName}`;  
+  try {
+    const response = await axios.get(api);
+    if(response.data.lyrics){
+      return response.data.lyrics;
+    }
+    
+  } catch (apiError) {
+    return apiError
+  }
+}

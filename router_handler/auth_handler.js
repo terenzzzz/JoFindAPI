@@ -68,7 +68,6 @@ exports.login = async (req, res) => {
 
         //生成Token
         const tokenStr = jwt.sign(userInfo, config.jwtSecretKey, {})
-        logger.log("登录成功！",req.body)
         return res.send({
             status: 200,
             message: '登录成功！',

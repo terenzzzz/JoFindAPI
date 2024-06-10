@@ -16,7 +16,8 @@ router.get('/getTopTracks', spotifyHandler.topTracks)
 router.get('/getTopArtists', spotifyHandler.topArtists)
 router.get('/search', spotifyHandler.search)
 router.get('/getSpotifyTrackById', spotifyHandler.getSpotifyTrackById)
-
+router.get('/getSpotifyArtistById', spotifyHandler.getSpotifyArtistById)
+router.get('/getArtistRelatedArtists', spotifyHandler.getArtistRelatedArtists)
 
 
 //共享

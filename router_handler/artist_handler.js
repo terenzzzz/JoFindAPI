@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3');
+
 const db = require('../db/index')
 const logger = require('../utils/logger');
 const axios = require('axios');

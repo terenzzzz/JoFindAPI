@@ -54,6 +54,7 @@ const tagRouter = require('./router/tag');
 const historyRouter = require('./router/history');
 const searchRouter = require('./router/search');
 const spotifyRouter = require('./router/spotify');
+const geniusRouter = require('./router/genius');
 
 
 app.use('/api', dataRouter)
@@ -67,6 +68,7 @@ app.use('/app', playListRouter)
 app.use('/app', tagRouter)
 app.use('/app', historyRouter)
 app.use('/api', spotifyRouter)
+app.use('/api', geniusRouter)
 
 
 // 错误级别中间件

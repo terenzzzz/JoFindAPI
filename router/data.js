@@ -24,6 +24,7 @@ router.get('/addTrackTag', dataHandler.addTrackTag)
 router.get('/getRandomTracks', dataHandler.getRandomTracks)
 router.get('/getRecommArtist', dataHandler.getRecommArtist)
 router.get('/updateLyricsFromThirdParty', dataHandler.updateLyricsFromThirdParty)
+router.get('/updateLyricsFromGenius', dataHandler.updateLyricsFromGenius)
 
 
 

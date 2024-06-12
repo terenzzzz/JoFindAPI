@@ -1,0 +1,68 @@
+const axios = require('axios');
+const cheerio = require('cheerio-without-node-native');
+
+exports.getLyricsFromGenius = async (req, res) => {
+    try {
+        //获取所有的曲目
+        const base_api_url = "https://api.genius.com"
+        const base_url = "https://genius.com" 
+        const access_token = process.env.GENIUS_ACCESS_TOKEN || "";
+
+        const artistName =req.query.artist;
+        const trackName = req.query.track;
+        let lyricAPI = ""
+        let lyric = ""
+
+        const api = `${base_api_url}/search?q=${trackName} ${artistName}`
+  
+        try {
+          const response = await axios.get(api, {
+            headers: {
+                'Authorization': access_token
+            }
+          });
+          if(response.data.response.hits){
+            const firstResult = response.data.response.hits[0]
+            const lyricPath = firstResult.result.path
+            lyricAPI = `${base_url}${lyricPath}`
+
+            lyric = await extractLyrics(lyricAPI)    
+          }
+        } catch (apiError) {
+            console.error(`Error fetching lyrics for ${trackName} - ${artistName}: ${apiError.message}`);
+        }
+        return res.send({ status: 200, message: 'Success', data:{
+            path: lyricAPI,
+            lyric: lyric
+        }});
+  
+        
+    } catch (err) {
+        // 捕获和处理错误
+        return res.send({ status: 1, message: err.message });
+    }
+  };
+
+  async function extractLyrics (url) {
+	try {
+		let { data } = await axios.get(url);
+		const $ = cheerio.load(data);
+		let lyrics = $('div[class="lyrics"]').text().trim();
+		if (!lyrics) {
+			lyrics = '';
+			$('div[class^="Lyrics__Container"]').each((i, elem) => {
+				if ($(elem).text().length !== 0) {
+					let snippet = $(elem)
+						.html()
+						.replace(/<br>/g, '\n')
+						.replace(/<(?!\s*br\s*\/?)[^>]+>/gi, '');
+					lyrics += $('<textarea/>').html(snippet).text().trim() + '\n\n';
+				}
+			});
+		}
+		if (!lyrics) return null;
+		return lyrics.trim();
+	} catch (e) {
+		throw e;
+	}
+};

@@ -3,11 +3,6 @@ const axios = require('axios');
 const mongodb = require("../model/mongodb");
 const querystring = require('querystring');
 const crypto = require('crypto');
-const express = require('express');
-const { log } = require('console');
-const artist = require('../model/schema/artist');
-const router = express.Router();
-
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URL;
@@ -120,46 +115,77 @@ exports.refresh_token = async (req, res) => {
 
 exports.recentlyPlayed = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
+  let tracks = []
 
   if (!accessToken) {
     return res.status(400).send({ error: 'Access token is required' });
   }
 
   try {
-    const response = await axios.get('https://api.spotify.com/v1/me/player/recently-played', {
+    const response = await axios.get('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
       headers: { 'Authorization': accessToken }
     });
     if (response.status === 200 && response.data) {
       let data = response.data.items
       // 处理Spotify返回的数据
-      return res.status(200).send(data);
+      for (let track of data){
+        track = track.track
+        trackStructured = {
+          _id: track.id,
+          uri: track.uri,
+          name: track.name,
+          artist: track.artists[0],
+          cover: track.album.images[0].url,
+          album: track.album.name,
+          duration: track.duration_ms,
+          year: track.album.release_date,
+          external_urls: track.external_urls.spotify,
+        }
+        tracks.push(trackStructured)
+      }
+      return res.status(200).send(tracks);
     } else if (response.status === 204) {
       // No content, meaning no song is currently playing
       return res.status(204).send({ message: 'No content, no song is currently playing' });
     } else {
-      return res.status(response.status).send({ error: 'Failed to get currently playing track' });
+      return res.status(response.status).send({ error: 'Failed to get recently played tracks' });
     }
   } catch (error) {
-    console.error('Error fetching currently playing track:', error);
+    console.error('Error fetching recently played tracks:', error.message);
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };
 
 exports.topTracks = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
+  let tracks = []
 
   if (!accessToken) {
     return res.status(400).send({ error: 'Access token is required' });
   }
 
   try {
-    const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+    const response = await axios.get('https://api.spotify.com/v1/me/top/tracks?limit=50', {
       headers: { 'Authorization': accessToken }
     });
     if (response.status === 200 && response.data) {
       let data = response.data.items
       // 处理Spotify返回的数据
-      return res.status(200).send(data);
+      for (let track of data){
+        trackStructured = {
+          _id: track.id,
+          uri: track.uri,
+          name: track.name,
+          artist: track.artists[0],
+          cover: track.album.images[0].url,
+          album: track.album.name,
+          duration: track.duration_ms,
+          year: track.album.release_date,
+          external_urls: track.external_urls.spotify,
+        }
+        tracks.push(trackStructured)
+      }
+      return res.status(200).send(tracks);
     } else if (response.status === 204) {
       // No content, meaning no song is currently playing
       return res.status(204).send({ message: 'No content, no song is currently playing' });

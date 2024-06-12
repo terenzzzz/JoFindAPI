@@ -17,11 +17,12 @@ const {History} = require("./schema/history");
 const MONGO_HOST = process.env.MONGO_HOST || "localhost";
 const MONGO_USER = process.env.MONGO_USER || "admin";
 const MONGO_PASS = process.env.MONGO_PASS;
-const MONGO_DBNAME = process.env.MONGO_DBNAME || "test";
+const MONGO_DBNAME = process.env.MONGO_DBNAME || "MusicBuddyVue";
 const MONGO_CONNNAME = process.env.MONGO_CONNNAME || "mongodb";
 
 /* Connection String */
-const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
+// const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
+const connectionString = `mongodb://localhost:27017/MusicBuddyVue`;
 
 /* Variables */
 let connected = false;

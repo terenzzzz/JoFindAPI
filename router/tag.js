@@ -9,6 +9,7 @@ const tagHandler = require('../router_handler/tag_handler')
 router.get('/getAllTags', tagHandler.getAllTags)
 router.get('/getAllYears', tagHandler.getAllYears)
 router.get('/getTagById', tagHandler.getTagById)
+router.get('/searchTags', tagHandler.searchTags)
 
 
 

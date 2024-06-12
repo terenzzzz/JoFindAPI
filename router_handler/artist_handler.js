@@ -36,6 +36,18 @@ exports.getSimilarArtists = async (req, res) => {
   }
 };
 
+exports.getArtistsByTags = async (req, res) => {
+  // req.query.tags: sdjahdjgfka,kjashdkjashd,askdjhasd
+  // => [sdjahdjgfka,kjashdkjashd,askdjhasd]
+  try{
+    const tags = req.query.tags.split(',');
+    const artists = await mongodb.getArtistsByTags(tags);
+    return res.send({ status: 200, message: 'Success', data: artists})
+  }catch(e){
+    return res.send({ status: 1, message: e.message })
+  }
+};
+
 
 
 

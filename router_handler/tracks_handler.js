@@ -50,6 +50,18 @@ exports.getTracksByTag = async (req, res) => {
   }
 };
 
+exports.getTracksByTags = async (req, res) => {
+  // req.query.tags: sdjahdjgfka,kjashdkjashd,askdjhasd
+  // => [sdjahdjgfka,kjashdkjashd,askdjhasd]
+  try{
+    const tags = req.query.tags.split(',');
+    const tracks = await mongodb.getTracksByTags(tags);
+    return res.send({ status: 200, message: 'Success', data: tracks})
+  }catch(e){
+    return res.send({ status: 1, message: e.message })
+  }
+};
+
 exports.getDailyRecomm = async (req, res) => {
   // TODO: Update Recomm Algorithm
   try{

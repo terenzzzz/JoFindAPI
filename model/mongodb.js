@@ -198,6 +198,20 @@ const getTagById = async (tag) => {
     }
 };
 
+
+const getTagsByKeyword = async (keyword) => {
+    try {
+        const tags = await Tag.find({ name: { $regex: keyword, $options: 'i' } }, '_id name count')
+            .sort({ count: -1 })  // Sort by count in descending order
+            .limit(100);           // Limit the results to 100
+
+        return tags.map(tag => ({ _id: tag._id, name: tag.name }));
+    } catch (error) {
+        console.log(error);
+        throw error;  // Optionally rethrow the error to handle it further up the call stack
+    }
+};
+
 /* PlayList Function */
 const addPlayList = async (playList) => {
     try {
@@ -373,6 +387,23 @@ const getTracksByTag = async (tag) => {
     }
 };
 
+const getTracksByTags = async (tags) => {
+    // const tags = [
+    //     mongoose.Types.ObjectId('60d5f9f9fc13ae1d3c000001'),
+    //     mongoose.Types.ObjectId('60d5f9f9fc13ae1d3c000002')
+    //   ];
+    try {
+        return await Track.find({ 'tags.tag': { $all: tags } })
+            .populate('artist')
+            .populate('tags.tag')
+            .limit(50);
+    } catch (error) {
+        console.log(error);
+        throw error; // Optionally rethrow the error to handle it further up the call stack
+    }
+};
+
+
 const getTrackById = async (track) => {
     try {
         return await Track.findById(track)
@@ -430,6 +461,22 @@ const getRandomArtists = async () => {
 
     } catch (error) {
         console.log(error);
+    }
+};
+
+const getArtistsByTags = async (tags) => {
+    // const tags = [
+    //     mongoose.Types.ObjectId('60d5f9f9fc13ae1d3c000001'),
+    //     mongoose.Types.ObjectId('60d5f9f9fc13ae1d3c000002')
+    //   ];
+    try {
+        return await Artist.find({ 'tags.tag': { $all: tags } })
+            .populate('tags')
+            .populate('tags.tag')
+            .limit(50);
+    } catch (error) {
+        console.log(error);
+        throw error; // Optionally rethrow the error to handle it further up the call stack
     }
 };
 
@@ -533,6 +580,7 @@ module.exports = {
     getAllTags,
     getAllYears,
     getTagById,
+    getTagsByKeyword,
     addPlayList,
     addPlayListTrack,
     deletePlayListTracks,
@@ -551,10 +599,12 @@ module.exports = {
     getTracksByArtist,
     getTrackById,
     getTracksByTag,
+    getTracksByTags,
     addTag,
     getTracks,
     getRandomTracks,
     getRandomArtists,
+    getArtistsByTags,
     getArtist
 }
 

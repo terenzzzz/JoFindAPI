@@ -17,6 +17,7 @@ router.get('/getRecentlyPlayed', tracksHandler.getRecentlyPlayed)
 router.get('/getTracksByArtist', tracksHandler.getTracksByArtist)
 router.get('/getTrackById', tracksHandler.getTrackById)
 router.get('/getTracksByTag', tracksHandler.getTracksByTag)
+router.get('/getTracksByTags', tracksHandler.getTracksByTags)
 
 
 //共享

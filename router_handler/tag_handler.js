@@ -30,4 +30,11 @@ exports.getTagById = async (req, res) => {
   }
 };
 
-
+exports.searchTags = async (req, res) => {
+  try{
+    const tags = await mongodb.getTagsByKeyword(req.query.keyword)
+    return res.send({ status: 200, message: 'Success', data: tags})
+  }catch(err){
+    return res.send({ status: 1, message: err.message })
+  }
+};

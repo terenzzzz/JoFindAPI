@@ -10,6 +10,7 @@ router.get('/getRecommArtist', artistHandler.getRecommArtist)
 
 router.get('/getArtist', artistHandler.getArtist)
 router.get('/getSimilarArtists', artistHandler.getSimilarArtists)
+router.get('/getArtistsByTags', artistHandler.getArtistsByTags)
 
 
 //共享

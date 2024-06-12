@@ -41,6 +41,15 @@ exports.getTrackById = async (req, res) => {
   }
 };
 
+exports.getTracksByTag = async (req, res) => {
+  try{
+    const track = await mongodb.getTracksByTag(req.query.tag)
+    return res.send({ status: 200, message: 'Success', data: track})
+  }catch(e){
+    return res.send({ status: 1, message: e.message })
+  }
+};
+
 exports.getDailyRecomm = async (req, res) => {
   // TODO: Update Recomm Algorithm
   try{

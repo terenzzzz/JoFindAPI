@@ -36,21 +36,6 @@ db.once('open', async () => {
     connected = true;
 });
 
-/* Session Storage */
-// let store;
-// if(connected){
-//     // Use Session schema from connect-mongo which aligns with express-session setup.
-//     store = new MongoStore.create({
-//         client: db,
-//         dbName: process.env.MONGO_DBNAME,
-//         collection: 'sessions',
-//         expires: 1000 * 60 * 60 * 48,
-//         crypto: {
-//             secret: process.env.STORE_SECRET || "secret",
-//         }
-//     });
-// }
-
 /* Search Function */
 const search = async (keyword, types, limit) => {
     try {
@@ -204,6 +189,14 @@ const getAllYears = async (limit) => {
         console.log(error);
     }
 }
+
+const getTagById = async (tag) => {
+    try {
+        return await Tag.findById(tag)
+    } catch (error) {
+        console.log(error);
+    }
+};
 
 /* PlayList Function */
 const addPlayList = async (playList) => {
@@ -369,6 +362,17 @@ const getTracksByArtist = async (artist) => {
     }
 };
 
+const getTracksByTag = async (tag) => {
+    try {
+        return await Track.find({ 'tags.tag': tag })
+            .populate('artist')
+            .populate('tags.tag')
+            .limit(50);
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getTrackById = async (track) => {
     try {
         return await Track.findById(track)
@@ -528,6 +532,7 @@ module.exports = {
     addHistory,
     getAllTags,
     getAllYears,
+    getTagById,
     addPlayList,
     addPlayListTrack,
     deletePlayListTracks,
@@ -545,6 +550,7 @@ module.exports = {
     addTrack,
     getTracksByArtist,
     getTrackById,
+    getTracksByTag,
     addTag,
     getTracks,
     getRandomTracks,

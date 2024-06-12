@@ -18,6 +18,7 @@ router.get('/search', spotifyHandler.search)
 router.get('/getSpotifyTrackById', spotifyHandler.getSpotifyTrackById)
 router.get('/getSpotifyArtistById', spotifyHandler.getSpotifyArtistById)
 router.get('/getArtistRelatedArtists', spotifyHandler.getArtistRelatedArtists)
+router.get('/getSavedTracks', spotifyHandler.savedTracks)
 
 
 //共享

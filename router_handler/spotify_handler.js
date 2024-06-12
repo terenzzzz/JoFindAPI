@@ -3,9 +3,11 @@ const axios = require('axios');
 const mongodb = require("../model/mongodb");
 const querystring = require('querystring');
 const crypto = require('crypto');
+const { log } = require('console');
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URL;
+const {getLyric} = require('../router_handler/genius_handler')
 
 const generateRandomString = (length) => {
   return crypto
@@ -23,7 +25,7 @@ exports.login = async (req, res) => {
   const scope = 'user-read-private user-read-email user-read-playback-state '
   + 'user-read-recently-played user-top-read user-follow-read user-follow-modify '
   + 'user-read-currently-playing playlist-read-private playlist-read-collaborative ' 
-  + 'streaming user-modify-playback-state playlist-modify-public'
+  + 'streaming user-modify-playback-state playlist-modify-public user-library-read'
 
   const queryString = querystring.stringify({
     response_type: 'code',
@@ -152,6 +154,50 @@ exports.recentlyPlayed = async (req, res) => {
     }
   } catch (error) {
     console.error('Error fetching recently played tracks:', error.message);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+exports.savedTracks = async (req, res) => {
+  const accessToken = req.query.access_token || req.headers.authorization;
+  let tracks = []
+
+  if (!accessToken) {
+    return res.status(400).send({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/tracks?limit=50', {
+      headers: { 'Authorization': accessToken }
+    });
+    if (response.status === 200 && response.data) {
+      let data = response.data.items
+
+      // 处理Spotify返回的数据
+      for (let track of data){
+        track = track.track
+        trackStructured = {
+          _id: track.id,
+          uri: track.uri,
+          name: track.name,
+          artist: track.artists[0],
+          cover: track.album.images[0].url,
+          album: track.album.name,
+          duration: track.duration_ms,
+          year: track.album.release_date,
+          external_urls: track.external_urls.spotify,
+        }
+        tracks.push(trackStructured)
+      }
+      return res.status(200).send(tracks);
+    } else if (response.status === 204) {
+      // No content, meaning no song is currently playing
+      return res.status(204).send({ message: 'No content' });
+    } else {
+      return res.status(response.status).send({ error: 'Failed to get saved Tracks' });
+    }
+  } catch (error) {
+    console.error('Error fetching saved tracks:', error);
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };
@@ -434,16 +480,3 @@ exports.getArtistRelatedArtists = async (req, res) => {
   }
 };
 
-
-async function getLyric(artistName,trackName){
-  const api = `https://api.lyrics.ovh/v1/${artistName}/${trackName}`;  
-  try {
-    const response = await axios.get(api);
-    if(response.data.lyrics){
-      return response.data.lyrics;
-    }
-    
-  } catch (apiError) {
-    return apiError
-  }
-}

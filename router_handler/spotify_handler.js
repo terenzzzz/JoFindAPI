@@ -200,19 +200,35 @@ exports.topTracks = async (req, res) => {
 
 exports.topArtists = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
+  let artists = []
 
   if (!accessToken) {
     return res.status(400).send({ error: 'Access token is required' });
   }
 
   try {
-    const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
+    const response = await axios.get('https://api.spotify.com/v1/me/top/artists?limit=50', {
       headers: { 'Authorization': accessToken }
     });
     if (response.status === 200 && response.data) {
       let data = response.data.items
+      for (let artist of data ){
+
+        artistStructured = {
+          _id: artist.id,
+          avatar: artist.images[0].url,
+          tags: artist.genres.map((tag) => ({tag:{
+            name: tag,
+          }})),
+          name: artist.name,
+          hotness: artist.popularity/100,
+          external_urls: artist.external_urls.spotify
+        }
+        artists.push(artistStructured)
+      }
+        
       // 处理Spotify返回的数据
-      return res.status(200).send(data);
+      return res.status(200).send(artists);
     } else if (response.status === 204) {
       // No content, meaning no song is currently playing
       return res.status(204).send({ message: 'No content, no song is currently playing' });

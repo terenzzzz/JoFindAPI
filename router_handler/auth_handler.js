@@ -35,6 +35,7 @@ exports.register = async (req, res) => {
             email: requestUser.email,
             password: bcrypt.hashSync(requestUser.password, 10),
             avatar: req.file.path,
+            spotify_refresh_token: "",
             tags: []
         }
 

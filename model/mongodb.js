@@ -22,7 +22,9 @@ const MONGO_CONNNAME = process.env.MONGO_CONNNAME || "mongodb";
 
 /* Connection String */
 // const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
-const connectionString = `mongodb://root:592592@0.0.0.0:27017/MusicBuddyVue --authenticationDatabase=admin`;
+
+const connectionString = `mongodb://root:592592@0.0.0.0:27017/MusicBuddyVue?authSource=admin`; // deploy
+// const connectionString = `mongodb:/localhost:27017/MusicBuddyVue`; // develop
 
 /* Variables */
 let connected = false;

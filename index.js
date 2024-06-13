@@ -90,7 +90,7 @@ app.use((err, req, res, next) => {
 
 // 部署使用
 // 开启服务
-const host = 'localhost';
+const host = '0.0.0.0';
 const port = process.env.PORT || 6906;
 
 

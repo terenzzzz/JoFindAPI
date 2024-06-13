@@ -44,12 +44,12 @@ exports.callback = async (req, res) => {
   const state = req.query.state || null;
   const storedState = req.cookies ? req.cookies[stateKey] : null;
 
-  if (state === null || state !== storedState) {
-    res.redirect('/#' +
-      querystring.stringify({
-        error: 'state_mismatch'
-      }));
-  } else {
+  // if (state === null || state !== storedState) {
+  //   res.redirect('/#' +
+  //     querystring.stringify({
+  //       error: 'state_mismatch'
+  //     }));
+  // } else {
     res.clearCookie(stateKey);
 
     try {
@@ -67,15 +67,8 @@ exports.callback = async (req, res) => {
       const access_token = 'Bearer ' + response.data.access_token;
       const refresh_token = response.data.refresh_token;
 
-      // 使用访问令牌访问Spotify Web API
-      // const userInfo = await axios.get('https://api.spotify.com/v1/me', {
-      //   headers: { 'Authorization': access_token }
-      // });
-
-      // console.log(userInfo.data);
-
       // 将令牌传递给浏览器以便从前端进行请求
-      res.redirect('http://localhost:8080/#/profile?' +
+      res.redirect(`${process.env.SPOTIFY_REDIRECT_FRONT_END_URL}?` +
         querystring.stringify({
           access_token: access_token,
           refresh_token: refresh_token
@@ -87,7 +80,7 @@ exports.callback = async (req, res) => {
           error: 'invalid_token'
         }));
     }
-  }
+  // }
 };
 
 exports.refresh_token = async (req, res) => {

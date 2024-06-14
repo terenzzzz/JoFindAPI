@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
         },
         spotify_refresh_token: {
             type: String,
-            required: false
+            required: false,
+            default: "" 
         },
         tags: [
             {

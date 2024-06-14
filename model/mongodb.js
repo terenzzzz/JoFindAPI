@@ -13,28 +13,14 @@ const {PlayListTrack} = require("./schema/playListTrack");
 const {History} = require("./schema/history");
 
 
-/* Connection Properties */
-const MONGO_HOST = process.env.MONGO_HOST || "localhost";
-const MONGO_USER = process.env.MONGO_USER || "admin";
-const MONGO_PASS = process.env.MONGO_PASS;
-const MONGO_DBNAME = process.env.MONGO_DBNAME || "MusicBuddyVue";
-const MONGO_CONNNAME = process.env.MONGO_CONNNAME || "mongodb";
-
-/* Connection String */
-// const connectionString = `mongodb+srv://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}/${MONGO_DBNAME}?retryWrites=true&w=majority`;
-
-const connectionString = `mongodb://root:592592@0.0.0.0:27017/MusicBuddyVue?authSource=admin`; // deploy
-// const connectionString = `mongodb:/localhost:27017/MusicBuddyVue`; // develop
-
 /* Variables */
 let connected = false;
-
-mongoose.connect(connectionString);
+mongoose.connect(process.env.MONGO_CONNECTION);
 
 const db = mongoose.connection;
 db.on('error', (error) => console.error(error));
 db.once('open', async () => {
-    console.log(`Connected to ${MONGO_CONNNAME}`);
+    console.log(`Connected to ${process.env.MONGO_CONNECTION}`);
     connected = true;
 });
 

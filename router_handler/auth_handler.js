@@ -73,9 +73,10 @@ exports.login = async (req, res) => {
             status: 200,
             message: '登录成功！',
             user_id: user._id,
+            name: user.name,
             // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀 
             token: 'Bearer ' + tokenStr,
-            spotify_refresh_token: user.spotify_refresh_token
+            spotify_refresh_token: user.spotify_refresh_token || ""
         })
 
     }else{

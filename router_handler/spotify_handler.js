@@ -280,25 +280,83 @@ exports.topArtists = async (req, res) => {
   }
 };
 
-exports.search = async (req, res) => {
+exports.searchArtists = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
 
   const keyword = req.query.q
-  const type = req.query.type
+  const artists = []
 
   if (!accessToken) {
     return res.status(400).send({ error: 'Access token is required' });
   }
 
   try {
-    const response = await axios.get(`https://api.spotify.com/v1/search?q=${keyword}&type=${type}`, {
+    const response = await axios.get(`https://api.spotify.com/v1/search?q=${keyword}&type=artist`, {
       headers: { 'Authorization': accessToken }
     });
     if (response.status === 200 && response.data) {
-
-      let data = response.data.tracks.items[0]
+      let data = response.data.artists.items
+      console.log(data);
+      for (let artist of data ){
+        artistStructured = {
+          _id: artist.id,
+          avatar: artist.images[0]? artist.images[0].url : "",
+          tags: artist.genres.map((tag) => ({tag:{
+            name: tag,
+          }})),
+          name: artist.name,
+          hotness: artist.popularity/100,
+          external_urls: artist.external_urls.spotify
+        }
+        artists.push(artistStructured)
+      }
+        
       // 处理Spotify返回的数据
-      return res.status(200).send(data);
+      return res.status(200).send(artists);
+    } else if (response.status === 204) {
+      // No content, meaning no song is currently playing
+      return res.status(204).send({ message: 'No content, no song is currently playing' });
+    } else {
+      return res.status(response.status).send({ error: 'Failed to get currently playing track' });
+    }
+  } catch (error) {
+    console.error('Error fetching search result:', error);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+exports.searchTracks = async (req, res) => {
+  const accessToken = req.query.access_token || req.headers.authorization;
+
+  const keyword = req.query.q
+  const tracks = []
+
+  if (!accessToken) {
+    return res.status(400).send({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.get(`https://api.spotify.com/v1/search?q=${keyword}&type=track`, {
+      headers: { 'Authorization': accessToken }
+    });
+    if (response.status === 200 && response.data) {
+      let data = response.data.tracks.items
+      // 处理Spotify返回的数据
+      for (let track of data){
+        trackStructured = {
+          _id: track.id,
+          uri: track.uri,
+          name: track.name,
+          artist: track.artists[0],
+          cover: track.album.images[0].url,
+          album: track.album.name,
+          duration: track.duration_ms,
+          year: track.album.release_date,
+          external_urls: track.external_urls.spotify,
+        }
+        tracks.push(trackStructured)
+      }
+      return res.status(200).send(tracks);
     } else if (response.status === 204) {
       // No content, meaning no song is currently playing
       return res.status(204).send({ message: 'No content, no song is currently playing' });

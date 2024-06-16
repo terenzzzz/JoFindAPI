@@ -296,7 +296,6 @@ exports.searchArtists = async (req, res) => {
     });
     if (response.status === 200 && response.data) {
       let data = response.data.artists.items
-      console.log(data);
       for (let artist of data ){
         artistStructured = {
           _id: artist.id,

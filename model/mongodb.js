@@ -11,6 +11,7 @@ const {User} = require("./schema/user");
 const {PlayList} = require("./schema/playList");
 const {PlayListTrack} = require("./schema/playListTrack");
 const {History} = require("./schema/history");
+const {Rating} = require("./schema/rating");
 
 
 /* Variables */
@@ -467,6 +468,54 @@ const getArtistsByTags = async (tags) => {
         throw error; // Optionally rethrow the error to handle it further up the call stack
     }
 };
+/* Rating Function */
+const getRating = async (user,item,itemType) => {
+    try {
+        // 构建查询条件
+        let query = {
+            user: user,
+            item: item,
+            itemType: itemType
+        };
+        // 执行查询
+        const rating = await Rating.findOne(query).populate('item');
+
+        return rating;
+    } catch (error) {
+        console.error('Error in getRating:', error);
+        throw error;
+    }
+}
+
+const addRating = async (item) => {
+    try {
+        const filter = {
+            user: item.user,
+            item: item.item,
+            itemType: item.itemType
+        };
+
+        const update = {
+            $set: {
+                rate: item.rate
+            }
+        };
+
+        const options = {
+            new: true,  // 返回更新后的文档
+            upsert: true,  // 如果不存在则创建新文档
+            runValidators: true,  // 确保更新操作也会运行验证器
+            setDefaultsOnInsert: true  // 如果是新文档，设置默认值
+        };
+
+        const savedRating = await Rating.findOneAndUpdate(filter, update, options);
+        return savedRating;
+    } catch (error) {
+        console.error('Error in addRating:', error);
+        throw error;  // 将错误抛出，而不是直接返回
+    }
+};
+
 
 /* Data Prepare Function */
 const addArtist = async (artist)=>{
@@ -593,6 +642,8 @@ module.exports = {
     getRandomTracks,
     getRandomArtists,
     getArtistsByTags,
-    getArtist
+    getArtist,
+    addRating,
+    getRating
 }
 

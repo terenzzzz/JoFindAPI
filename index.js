@@ -55,6 +55,7 @@ const historyRouter = require('./router/history');
 const searchRouter = require('./router/search');
 const spotifyRouter = require('./router/spotify');
 const geniusRouter = require('./router/genius');
+const ratingRouter = require('./router/rating');
 
 
 app.use('/api', dataRouter)
@@ -67,6 +68,7 @@ app.use('/app', userRouter)
 app.use('/app', playListRouter)
 app.use('/app', tagRouter)
 app.use('/app', historyRouter)
+app.use('/app', ratingRouter)
 app.use('/api', spotifyRouter)
 app.use('/api', geniusRouter)
 

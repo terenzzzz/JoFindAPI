@@ -11,7 +11,7 @@ const ratingHandler = require('../router_handler/rating_handler')
 
 router.post('/addRating', generalUpload.none(), ratingHandler.addRating)
 router.get('/getRating',ratingHandler.getRating)
-
+router.get('/getRatings',ratingHandler.getRatings)
 
 
 //共享

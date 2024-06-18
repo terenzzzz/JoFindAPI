@@ -1,3 +1,4 @@
+const { itemTypes } = require("../model/enum/itemTypes");
 const mongodb = require("../model/mongodb")
 
 
@@ -23,7 +24,6 @@ exports.getRating = async (req, res) => {
   try {
     // 获取用户的历史记录
     const rating = await mongodb.getRating(req.user._id, req.query.item, req.query.itemType);
-
     
     // 检查是否有历史记录
     if (rating._id) {
@@ -37,4 +37,25 @@ exports.getRating = async (req, res) => {
   }
 };
 
+exports.getRatings = async (req, res) => {
+  try{
+    const ratings = await mongodb.getRatings(req.user._id)
+
+    let ratedTracks=[]
+    let ratedArtists=[]
+
+    ratings.forEach(item => {
+      if (item.itemType === itemTypes.TRACK) {
+        ratedTracks.push(item);
+      } else if (item.itemType === itemTypes.ARTIST) {
+        ratedArtists.push(item);
+      }
+    });
+
+
+    return res.send({ status: 200, message: 'Success', data: {ratedTracks,ratedArtists}})
+  }catch(err){
+    return res.send({ status: 1, message: err.message })
+  }
+};
 

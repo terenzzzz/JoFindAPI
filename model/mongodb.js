@@ -487,6 +487,18 @@ const getRating = async (user,item,itemType) => {
     }
 }
 
+const getRatings = async (user) => {
+    try {
+        // 执行查询
+        const rating = await Rating.find({user: user}).populate('item');
+
+        return rating;
+    } catch (error) {
+        console.error('Error in getRating:', error);
+        throw error;
+    }
+}
+
 const addRating = async (item) => {
     try {
         const filter = {
@@ -644,6 +656,7 @@ module.exports = {
     getArtistsByTags,
     getArtist,
     addRating,
-    getRating
+    getRating,
+    getRatings
 }
 

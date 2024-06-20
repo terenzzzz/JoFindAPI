@@ -1,8 +1,8 @@
 
-// Input: lyric text
-// Output: lyric features
 const compromise = require('compromise');
 const natural = require('natural');
+
+// ================================= Pre-Process =============================
 
 // Tokenisation
 function tokenisation(lyric) {
@@ -58,20 +58,18 @@ function normalisation(lyric, stem) {
 }
 
 
-// 2. Feature Extraction: Word2Vec
-// 利用 Word2Vec 技术来计算音乐的歌词向量，并将这些向量保存到数据库中。
-// 在推荐时，根据用户查询的音乐歌词向量和数据库中存储的歌曲歌词向量进行相似度计算，从而实现歌曲推荐功能。
-// 确保在实际应用中适当调整参数和优化算法，以提高推荐的准确性和用户体验。
+
+// ================================= Model Training =============================
 
 const tf = require('@tensorflow/tfjs-node');
-// 创建训练数据
+
 
 // 该函数接受一个歌词语料库 corpus，每条歌词表示为一个单词数组。
 // 对于每个单词，它找到距离该单词不超过 windowSize 的上下文单词对。
 // 这些单词对被用作输入和目标值对，以训练 Word2Vec 模型。
 // 函数返回输入张量、标签、词汇表等数据。
-function createTrainingData(corpus) {
-    const windowSize = 2; //每个目标单词选择上下文单词时的窗口大小
+function createTrainingData(corpus) { // 创建训练数据
+    const windowSize = 4; //每个目标单词选择上下文单词时的窗口大小
     const wordPairs = []; //存储目标单词和上下文单词对 [targetWord, contextWord]
     const vocab = new Set(); //存储整个语料库中出现的所有唯一单词
 
@@ -114,33 +112,47 @@ function createTrainingData(corpus) {
     return { inputs: inputs.gather([0], 1), labels, wordIndex, indexWord, vocabSize: vocab.size };
 }
 
-// 创建并训练模型
-// 该函数使用 createTrainingData 获取训练数据。
-// 它创建一个顺序模型，包括 Embedding 层、Flatten 层和 Dense 层。
-// 使用分类交叉熵损失函数和 Adam 优化器编译模型。
-// 在输入和标签上训练模型 10 个 epochs。
-async function trainWord2Vec(corpus) {
-    const { inputs, labels, vocabSize } = createTrainingData(corpus);
 
+
+async function trainWord2Vec(corpus) { // 创建训练模型
+    // 使用 createTrainingData 获取训练数据。
+    const { inputs, labels, wordIndex, vocabSize } = createTrainingData(corpus);
+
+    // 创建一个顺序模型，包括 Embedding 层、Flatten 层和 Dense 层。
     const model = tf.sequential();
-    model.add(tf.layers.embedding({ inputDim: vocabSize, outputDim: 50, inputLength: 1 }));
+    model.add(tf.layers.embedding({ inputDim: vocabSize, outputDim: 100, inputLength: 1 }));
     model.add(tf.layers.flatten());
     model.add(tf.layers.dense({ units: vocabSize, activation: 'softmax' }));
 
     model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy' });
 
-    await model.fit(inputs, labels, { epochs: 10 });
+    model.summary();
 
-    await model.save('file://trained_model');
+    // 在输入和标签上训练模型 10 个 epochs。
+    await model.fit(inputs, labels, { epochs: 15 });
+
+
+    // // 保存模型
+    const filePath = `model_${toDate()}`;
+    await model.save(`file://${filePath}`); 
+    console.log(`Done! Saved Model Path: ${filePath}`);
+
+    // 保存 wordIndex 到文件
+    fs.writeFileSync(`wordIndex_${toDate()}.json`, JSON.stringify(wordIndex));
+    console.log(`Done! Saved wordIndex Path: wordIndex_${toDate()}.json`);
 
     return model;
 }
 
 function getSongVector(songLyrics, model, wordIndex) {
     const words = normalisation(songLyrics);
+    const embeddingLayer = model.layers[0]; // 获取 Embedding 层
+
     const vectors = words.map(word => {
         if (wordIndex[word] !== undefined) {
-            return model.predict(tf.tensor2d([wordIndex[word]], [1, 1])).dataSync();
+            const wordTensor = tf.tensor2d([wordIndex[word]], [1, 1]);
+            const embedding = embeddingLayer.apply(wordTensor); // 直接获取嵌入向量
+            return embedding.dataSync(); // 获取嵌入向量的值
         } else {
             return null;
         }
@@ -160,52 +172,131 @@ function getSongVector(songLyrics, model, wordIndex) {
     return meanVector;
 }
 
-// Training
+
+// 定义读取模型的方法
+async function loadModel(path) {
+    try {
+        const model = await tf.loadLayersModel(`file://${path}/model.json`);
+        console.log('Model loaded successfully');
+        return model;
+    } catch (error) {
+        console.error('Error loading the model:', error);
+        throw error; // 重新抛出错误，以便调用方可以处理
+    }
+}
+
+async function findSimilarWords(word, model, wordIndex) {
+    const wordIdx = wordIndex[word];
+    if (wordIdx === undefined) {
+        console.error(`Word "${word}" not found in the word index.`);
+        return [];
+    }
+
+    const embeddingLayer = model.layers[0];
+
+    // 获取词的嵌入向量
+    const wordVector = embeddingLayer.apply(tf.tensor2d([wordIdx], [1, 1])).dataSync();
+
+    // 计算其他词与目标词的相似度
+    const similarities = {};
+    for (const otherWord in wordIndex) {
+        if (otherWord !== word) {
+            const otherWordIdx = wordIndex[otherWord];
+            const otherWordVector = embeddingLayer.apply(tf.tensor2d([otherWordIdx], [1, 1])).dataSync();
+            const similarity = calculateCosineSimilarity(wordVector, otherWordVector);
+            similarities[otherWord] = similarity;
+        }
+    }
+
+    // 按相似度排序
+    const sortedSimilarities = Object.entries(similarities)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10); // 取前10个最相似的词
+
+    return sortedSimilarities;
+}
+
+function calculateCosineSimilarity(vector1, vector2) {
+    const dotProduct = vector1.reduce((acc, val, idx) => acc + val * vector2[idx], 0);
+    const norm1 = Math.sqrt(vector1.reduce((acc, val) => acc + val * val, 0));
+    const norm2 = Math.sqrt(vector2.reduce((acc, val) => acc + val * val, 0));
+    return dotProduct / (norm1 * norm2);
+}
+
+
+
+// ================================= Interface =============================
 const fs = require('fs');
-const {lyric_sample,lyric_sample2,lyric_sample3,lyric_sample4} = require('../lyric/sampleData')
 const mongodb = require("../../model/mongodb");
 const { log } = require('console');
+const { toDate } = require('../today');
 
-// 获取Tracks
-async function getTracks() {
-    try {
-        return await mongodb.getTracks();
-    } catch (e) {
-        return e.message;
-    }
-};
+function extractKeywords(lyric){
+    // 获取关键词数组
+    const keywordsArray = normalisation(lyric);
+    // 转换成 Set 以去除重复项
+    const keywordsSet = new Set(keywordsArray);
+    // 返回 Set
+    return keywordsSet;
+}
 
-(async () => {
+async function train(){
     try {
         console.log("Getting Tracks from MongoDB...");
-        const tracks = await getTracks();
+        const tracks = await mongodb.getTracks();
         let corpus = [];
-        console.log("Got Tracks, Processing corpus");
+        console.log("Processing corpus...");
         tracks.forEach(track => {
             if(track.lyric){
                 corpus.push(normalisation(track.lyric));
             }
             
         });
-        console.log("Got corpus, Training Word2Vec Model");
+        console.log("Training Word2Vec Model...");
         await trainWord2Vec(corpus)
-        console.log("Finished Training");
-        return
+        return    
     } catch (e) {
-        console.error(e);
+        return e.message;
     }
-})();
+}
+
+async function getLyricVec(modelPath,wordIndexPath,lyric) {
+    // 加载模型
+    const model = await loadModel(modelPath);
+
+    // 加载 wordIndex
+    const wordIndex = JSON.parse(fs.readFileSync(wordIndexPath, 'utf-8'));
+
+    const songVector = await getSongVector(lyric, model, wordIndex);
+    console.log(songVector);
+    return songVector
+}
+
+async function getSimilarWords(modelPath,wordIndexPath,word) {
+    // 加载模型
+    const model = await loadModel(modelPath);
+    // 加载 wordIndex
+    const wordIndex = JSON.parse(fs.readFileSync(wordIndexPath, 'utf-8'));
+
+    const words = findSimilarWords(word, model, wordIndex);
+    console.log(words);
+    return words
+}
+
+const {lyric_sample} = require("../lyric/sampleData")
+// train()
+// getSimilarWords("model_2024-06-20", "wordIndex_2024-06-20.json", "scar")
+// getLyricVec("model_2024-06-20", "wordIndex_2024-06-20.json", lyric_sample)
+
+
+module.exports = {
+    extractKeywords,
+    train,
+    getLyricVec
+};
 
 
 
-// trainWord2Vec(corpus).then(model => {
-//     const { wordIndex } = createTrainingData(corpus);
-//     const songVector = getSongVector(lyric_sample4, model, wordIndex);
 
-//     // 保存到数据库的示例代码（这里用 JSON 文件模拟数据库）
-//     const database = { "song1": songVector };
-//     fs.writeFileSync('database.json', JSON.stringify(database), 'utf-8');
-//     console.log('Song vector saved to database.json');
-// });
 
 

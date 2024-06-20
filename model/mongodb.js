@@ -318,8 +318,23 @@ const updateSpotifyRefreshToken = async (id, token) => {
           if (!updatedUser) {
             throw new Error('User not found');
           }
+          return updatedUser;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const updateUserTags = async (id, tags) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { tags: tags },
+            { new: true } // 返回更新后的文档
+          );
       
-          console.log('Spotify refresh token updated successfully');
+          if (!updatedUser) {
+            throw new Error('User not found');
+          }
           return updatedUser;
     } catch (error) {
         console.log(error);
@@ -641,6 +656,7 @@ module.exports = {
     getUserByEmail,
     addUser,
     updateSpotifyRefreshToken,
+    updateUserTags,
     addArtist,
     updateLyric,
     getAllTracks,

@@ -1,7 +1,8 @@
 const db = require('../db/index')
 const logger = require('../utils/logger');
 const axios = require('axios');
-const mongodb = require("../model/mongodb")
+const mongodb = require("../model/mongodb");
+const { extractKeywords } = require('../utils/lyric/lyricProcessor');
 
 exports.getRandomTracks = async (req, res) => {
   try{

@@ -18,7 +18,7 @@ async function getVecs(modelPath,wordIndexPath){
     // 加载模型
     const model = await loadModel(modelPath);
     // 加载 wordIndex
-    const wordIndex = JSON.parse(fs.readFileSync(wordIndexPath, 'utf-8'));
+    const wordIndex = JSON.parse(await fs.readFileSync(wordIndexPath, 'utf-8'));
     // 假设model是训练好的Word2Vec模型
     const wordVectors = {};
     const words = Object.keys(wordIndex);
@@ -43,25 +43,13 @@ async function reduceDimension(modelPath,wordIndexPath) {
     return result;
 }
 
-async function reduceDimension(modelPath,wordIndexPath) {
-    const wordVectors = await getVecs(modelPath,wordIndexPath)
-    const vectors = Object.values(wordVectors);
-    const words = Object.keys(wordVectors);
-    const umap = new UMAP({nComponents: 2});
-    const embedding = umap.fit(vectors);
-
-    const result = { embedding, words };
-    fs.writeFileSync('reducedData.json', JSON.stringify(result));
-
-    return result;
-}
-
 async function getReduceDimension() {
     const fileContent = await fs.readFile('reducedData.json', 'utf8');
     const data = JSON.parse(fileContent);
     return data;
 }
-// reduceDimension("model_2024-06-20","wordIndex_2024-06-20.json")
+// reduceDimension("model_2024-06-21","wordIndex_2024-06-21.json")
+
 
 module.exports = { 
     reduceDimension,

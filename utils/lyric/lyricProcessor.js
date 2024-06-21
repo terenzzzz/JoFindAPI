@@ -118,18 +118,31 @@ async function trainWord2Vec(corpus) { // 创建训练模型
     // 使用 createTrainingData 获取训练数据。
     const { inputs, labels, wordIndex, vocabSize } = createTrainingData(corpus);
 
-    // 创建一个顺序模型，包括 Embedding 层、Flatten 层和 Dense 层。
+    // 创建模型
     const model = tf.sequential();
-    model.add(tf.layers.embedding({ inputDim: vocabSize, outputDim: 100, inputLength: 1 }));
+    model.add(tf.layers.embedding({ inputDim: vocabSize, outputDim: 200, inputLength: 1 }));
     model.add(tf.layers.flatten());
+
+    // 添加隐藏层
+    model.add(tf.layers.dense({ units: 128, activation: 'relu' }));
     model.add(tf.layers.dense({ units: vocabSize, activation: 'softmax' }));
 
-    model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy' });
+    // 编译模型
+    model.compile({ optimizer: tf.train.adam(0.01), loss: 'categoricalCrossentropy' });
 
+    // 模型概述
     model.summary();
 
-    // 在输入和标签上训练模型 10 个 epochs。
-    await model.fit(inputs, labels, { epochs: 15 });
+    // 训练模型
+    await model.fit(inputs, labels, {
+        epochs: 30,
+        batchSize: 64,
+        validationSplit: 0.2,
+        callbacks: {
+            onEpochEnd: (epoch, logs) => console.log(`Epoch ${epoch + 1}: loss = ${logs.loss}, val_loss = ${logs.val_loss}`)
+        }
+    });
+
 
 
     // // 保存模型
@@ -260,16 +273,45 @@ async function train(){
     }
 }
 
-async function getLyricVec(modelPath,wordIndexPath,lyric) {
+async function updateTrackVec() {
+    try {
+        const trackVecs = await mongodb.getTrackVecs();
+        console.log("Updating...");
+        
+        // 加载模型和 wordIndex（移到循环外以避免重复加载）
+        const model = await loadModel("model_2024-06-21");
+        const wordIndex = JSON.parse(fs.readFileSync("wordIndex_2024-06-21.json", 'utf-8'));
+
+        // 使用 for...of 循环代替 forEach
+        for (const trackvec of trackVecs) {
+            try {
+                if (trackvec.track.lyric && trackvec.vec.length == 0) {
+                    const vec = await getSongVector(trackvec.track.lyric, model, wordIndex);
+                    await mongodb.addTrackVec(trackvec.track._id, vec);
+                }
+            } catch (error) {
+                console.error(`Error processing track ${trackvec.track._id}:`, error);
+                // 决定是否继续处理其他 tracks
+            }
+        }
+
+        console.log("Update Track Vec done!!!");
+    } catch (e) {
+        console.error("Error in updateTrackVec:", e.message);
+        throw e;
+    }
+}
+
+
+async function getSimilarWords(modelPath,wordIndexPath,word) {
     // 加载模型
     const model = await loadModel(modelPath);
-
     // 加载 wordIndex
     const wordIndex = JSON.parse(fs.readFileSync(wordIndexPath, 'utf-8'));
 
-    const songVector = await getSongVector(lyric, model, wordIndex);
-    console.log(songVector);
-    return songVector
+    const words = findSimilarWords(word, model, wordIndex);
+    console.log(words);
+    return words
 }
 
 async function getSimilarWords(modelPath,wordIndexPath,word) {
@@ -286,13 +328,12 @@ async function getSimilarWords(modelPath,wordIndexPath,word) {
 const {lyric_sample} = require("../lyric/sampleData")
 // train()
 // getSimilarWords("model_2024-06-20", "wordIndex_2024-06-20.json", "scar")
-// getLyricVec("model_2024-06-20", "wordIndex_2024-06-20.json", lyric_sample)
-
+// getLyricVec("model_2024-06-21", "wordIndex_2024-06-21.json", lyric_sample)
+// updateTrackVec()
 
 module.exports = {
     extractKeywords,
     train,
-    getLyricVec
 };
 
 

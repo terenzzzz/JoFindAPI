@@ -12,6 +12,7 @@ const {PlayList} = require("./schema/playList");
 const {PlayListTrack} = require("./schema/playListTrack");
 const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
+const {TrackVec} = require("./schema/trackVec");
 
 
 /* Variables */
@@ -24,6 +25,49 @@ db.once('open', async () => {
     console.log(`Connected to ${process.env.MONGO_CONNECTION}`);
     connected = true;
 });
+
+/* trackVec Function */
+async function addTrackVec(trackId, vector) {
+    try {
+        if (!(vector instanceof Float32Array)) {
+            return
+        }
+
+        const vectorArray = Array.from(vector);
+
+        const result = await TrackVec.findOneAndUpdate(
+            { track: trackId },  // 查找条件
+            { $set: { vec: vectorArray } },  // 更新操作
+            { 
+                new: true,  // 返回更新后的文档
+                upsert: true,  // 如果不存在则创建新文档
+                runValidators: true  // 运行 schema 验证
+            }
+        );
+
+        if (result) {
+            console.log(`TrackVec updated successfully for trackId: ${trackId}`);
+            return result;
+        } else {
+            throw new Error('Update operation did not return a result');
+        }
+    } catch (error) {
+        console.error(`Error in addTrackVec for trackId ${trackId}:`, error);
+        throw error;
+    }
+}
+
+async function getTrackVecs() {
+    try {
+        return await TrackVec.find().populate("track");
+    } catch (error) {
+        console.log(error);
+    }
+
+}
+
+
+
 
 /* Search Function */
 const search = async (keyword, types, limit) => {
@@ -638,6 +682,8 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    addTrackVec,
+    getTrackVecs,
     search,
     getHistories,
     addHistory,

@@ -7,7 +7,7 @@ const router = express.Router()
 const tracksHandler = require('../router_handler/tracks_handler')
 
 router.get('/getRandomTracks', tracksHandler.getRandomTracks)
-
+router.get('/getLyricTopWords', tracksHandler.getLyricTopWords)
 router.get('/getTracks', tracksHandler.getTracks)
 router.get('/getDailyRecomm', tracksHandler.getDailyRecomm)
 router.get('/getResonanace', tracksHandler.getResonanace)

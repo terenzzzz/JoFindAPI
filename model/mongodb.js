@@ -13,6 +13,7 @@ const {PlayListTrack} = require("./schema/playListTrack");
 const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
 const {TrackVec} = require("./schema/trackVec");
+const {TopWord} = require("./schema/topword");
 
 
 /* Variables */
@@ -66,7 +67,13 @@ async function getTrackVecs() {
 
 }
 
-
+const getLyricTopWords = async (track) => {
+    try {
+        return await TopWord.findOne({ track: track });
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 
 /* Search Function */
@@ -485,6 +492,15 @@ const getRandomTracks = async () => {
 };
 
 /* Artist Function */
+// const addArtist = async (artist) => {
+//     // Update Algorithm
+//     try {
+//         return await Artist.findOne({_id:id}).populate("tags").populate("tags.tag");
+//     } catch (error) {
+//         console.log(error);
+//     }
+// };
+
 const getArtist = async (id) => {
     // Update Algorithm
     try {
@@ -594,12 +610,10 @@ const addArtist = async (artist)=>{
         var tags = JSON.parse(artist.tags)
 
         const newArtist = new Artist({
-            id_string: artist.artist_id,
             name: artist.name,
             tags: [],
             familiarity: artist.familiarity,
             hotness: artist.hotness,
-            ne_artist_id: artist.ne_artist_id,
             avatar: artist.avatar,
             summary: artist.summary,
             published: artist.published
@@ -643,21 +657,19 @@ const addTrack = async (track)=>{
         var tags = JSON.parse(track.tags)
 
         const newTrack = new Track({
-            id_string: track.track_id,
-            name: track.title,
-            album: track.release,
+            name: track.name,
+            album: track.album? track.album : "",
             artist: null,
             year: track.year,
-            ne_song_id: track.ne_song_id,
-            cover: track.ne_song_cover,
-            duration: track.ne_duration,
-            lyric: track.ne_lyric,
+            cover: track.cover,
+            duration: track.duration,
+            lyric: track.lyric,
             tags: [],
             summary: track.summary,
             published: track.published,
         });
 
-        const artist = await Artist.findOne({ name: track.artist_name });
+        const artist = await Artist.findOne({ name: track.artist });
         if (artist) {
             newTrack.artist = artist._id;
         }
@@ -673,7 +685,7 @@ const addTrack = async (track)=>{
                 }
             }
         }
-        console.log(`Track "${track.title}" 已添加。`);
+        console.log(`Track "${track.name}" 已添加。`);
         return await newTrack.save()
 
     }catch(e){
@@ -682,6 +694,7 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    getLyricTopWords,
     addTrackVec,
     getTrackVecs,
     search,

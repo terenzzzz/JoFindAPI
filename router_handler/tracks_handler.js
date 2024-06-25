@@ -2,7 +2,17 @@ const db = require('../db/index')
 const logger = require('../utils/logger');
 const axios = require('axios');
 const mongodb = require("../model/mongodb");
-const { extractKeywords } = require('../utils/lyric/lyricProcessor');
+const { extractKeywords } = require('../utils/lyric/word2vec');
+
+// 获取Tracks
+exports.getLyricTopWords = async (req, res) => {
+  try{
+    const topwords = await mongodb.getLyricTopWords(req.query.track)
+    return res.send({ status: 200, message: 'Success', data: topwords})
+  }catch(e){
+    return res.send({ status: 1, message: e.message })
+  }
+};
 
 exports.getRandomTracks = async (req, res) => {
   try{

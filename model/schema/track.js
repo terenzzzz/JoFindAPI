@@ -8,7 +8,8 @@ const trackSchema = new mongoose.Schema({
         },
         album: {
             type: String,
-            required: true
+            required: true,
+            default: ""
         },
         artist: {
             type: mongoose.Schema.Types.ObjectId,

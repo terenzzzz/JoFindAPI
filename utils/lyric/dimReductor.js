@@ -1,6 +1,6 @@
 const UMAP = require('umap-js').UMAP;
 const tf = require('@tensorflow/tfjs-node');
-const fs = require('fs').promises;
+const fs = require('fs');
 // 定义读取模型的方法
 async function loadModel(path) {
     try {
@@ -44,11 +44,11 @@ async function reduceDimension(modelPath,wordIndexPath) {
 }
 
 async function getReduceDimension() {
-    const fileContent = await fs.readFile('reducedData.json', 'utf8');
+    const fileContent = await fs.readFileSync('reducedData.json', 'utf8');
     const data = JSON.parse(fileContent);
     return data;
 }
-// reduceDimension("model_2024-06-21","wordIndex_2024-06-21.json")
+// reduceDimension("model_2024-06-24","wordIndex_2024-06-24.json")
 
 
 module.exports = { 

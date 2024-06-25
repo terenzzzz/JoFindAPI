@@ -807,3 +807,159 @@ exports.addTrackTag = async (req,res) => {
     console.error('Error:', error);
   }
 }
+
+/**
+ * Process Lyrics_dataset
+ */
+const fs = require('fs');
+
+
+structureArtist = async (req, res) => {
+  fs.readFile('/Users/terenzzzz/Desktop/MusicBuddyAPI/json/Lyrics_TaylorSwift.json', 'utf8', async (err, data) => {
+    if (err) {
+        console.error('读取文件时出错:', err);
+        return;
+    }
+    try {
+      let jsonData = JSON.parse(data);
+        let artist_summary = jsonData.description
+        let artist_name = jsonData.name
+        let avatar = jsonData.image_url
+        let published = ""
+
+        let response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${artist_name}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+        if (response.data.artist){
+          artist_summary = response.data.artist.bio.summary
+          published = response.data.artist.bio.published
+        }
+
+        response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=${artist_name}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+        if (response.data.toptags){
+          var tags = response.data.toptags.tag.slice(0, 10); //限制最多十个标签
+          tags = tags.map(obj => {
+            // 使用解构赋值去掉 'url' 键值对
+            const { url, ...rest } = obj;
+            return rest;
+          });
+        }
+
+        let newArtist = {
+          name: artist_name,
+          tags: JSON.stringify(tags),
+          familiarity: 0,
+          hotness: 0,
+          avatar: avatar,
+          summary: artist_summary,
+          published: published
+        };
+
+        await mongodb.addArtist(newArtist)
+
+
+      } catch (err) {
+        console.error('解析 JSON 出错:', err);
+      }
+    })
+};
+
+structureTrack = async (req, res) => {
+  fs.readFile('/Users/terenzzzz/Desktop/MusicBuddyAPI/json/Lyrics_PostMalone.json', 'utf8', async (err, data) => {
+    if (err) {
+        console.error('读取文件时出错:', err);
+        return;
+    }
+    try {
+      let jsonData = JSON.parse(data);
+
+          let artist_name = jsonData.name
+
+          jsonData.songs.forEach(async json =>{
+            const track_summary = json.description.plain
+            const track_title = json.title
+            const track_release = json.release_date
+            const track_cover = json.header_image_url
+            const track_lyrics = json.lyrics
+            const album_name = json.album?.name
+            let tags = []
+
+            
+
+            const response = await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.gettoptags&artist=${artist_name}&track=${encodeURIComponent(track_title)}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+            if (response.data.toptags){
+              tags = response.data.toptags.tag.slice(0, 10); //限制最多十个标签
+              tags = tags.map(obj => {
+                // 使用解构赋值去掉 'url' 键值对
+                const { url, ...rest } = obj;
+                return rest;
+              });
+            }
+
+
+            const track = {
+              name: track_title,
+              artist: artist_name,
+              cover: track_cover,
+              album: album_name,
+              duration: 0,
+              summary: track_summary,
+              year: "",
+              published: track_release,
+              lyric: track_lyrics,
+              tags: JSON.stringify(tags)
+            }
+
+            console.log(track.artist)
+            await mongodb.addTrack(track)
+        })
+      } catch (err) {
+        console.error('解析 JSON 出错:', err);
+      }
+    })
+};
+
+// structureTrack()
+// structureArtist()
+
+
+// 读取 JSON 文件
+// fs.readFile('/Users/terenzzzz/Desktop/MusicBuddyAPI/json/Lyrics_Beyonc.json', 'utf8', (err, data) => {
+//     if (err) {
+//         console.error('读取文件时出错:', err);
+//         return;
+//     }
+//     try {
+//         const jsonData = JSON.parse(data);
+//         const artist_summary = jsonData.description
+//         const artist_name = jsonData.name
+//         const avatar = jsonData.image_url
+
+//         jsonData.songs.slice(0, 1).forEach(json =>{
+//           const track_summary = json.description.plain
+//           const track_title = json.title
+//           const track_release = json.release_date
+//           const track_cover = json.header_image_url
+//           const track_lyrics = json.lyrics
+
+//           // const album_name = json.album.name
+
+//           artist = {
+//             avatar: avatar,
+//             summary: artist_summary,
+//             name: artist_name,
+//           }
+
+//           track = {
+//             name: track_title,
+//             // artist: artist,
+//             cover: track_cover,
+//             // album: data.album.name,
+//             // duration: data.duration_ms,
+//             summary: track_summary,
+//             published: track_release,
+//             lyric: track_lyrics
+//           }
+//         })
+//     } catch (err) {
+//         console.error('解析 JSON 出错:', err);
+//     }
+// })

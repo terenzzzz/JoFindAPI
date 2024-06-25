@@ -10,6 +10,7 @@ const recommendHandler = require('../router_handler/recommend_handler')
 
 
 router.get('/get2dModel',recommendHandler.get2dModel)
+router.get('/getSimilarWords',recommendHandler.getSimilarWords)
 
 
 //共享

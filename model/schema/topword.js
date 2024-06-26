@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const topWordSchema = new mongoose.Schema({
     track: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'track',
+      ref: 'Track',
       required: true
     },
     topwords: {

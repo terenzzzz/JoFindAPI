@@ -12,8 +12,9 @@ const {PlayList} = require("./schema/playList");
 const {PlayListTrack} = require("./schema/playListTrack");
 const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
-const {TrackVec} = require("./schema/trackVec");
+
 const {TopWord} = require("./schema/topword");
+const {TfidfSimilarity} = require("./schema/tfidfsimilarity");
 
 
 /* Variables */
@@ -423,6 +424,14 @@ const getTracks = async () => {
     }
 };
 
+const getTfidfSimilarities = async (track) => {
+    try {
+        return await TfidfSimilarity.findOne({track: track}).populate("topsimilar");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getTracksByArtist = async (artist) => {
     try {
         return await Track.find({artist: artist}).populate("artist").populate("tags").populate("tags.tag").limit(50);
@@ -719,6 +728,7 @@ module.exports = {
     addArtist,
     updateLyric,
     getAllTracks,
+    getTfidfSimilarities,
     addTrack,
     getTracksByArtist,
     getTrackById,

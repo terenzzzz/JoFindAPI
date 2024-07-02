@@ -25,6 +25,70 @@ exports.getRecommArtist = async (req, res) => {
   }
 };
 
+async function updateTracksTags() {
+  const tracks = await mongodb.getAllTracks();
+  const referenceDate = new Date('2024-06-24T00:00:00.000Z');
+  const tags = await mongodb.getAllTags()
+
+  const tagMap = new Map(tags.map(tag => [tag.name.toLowerCase(), tag]));
+
+  for (let track of tracks) {
+    if (new Date(track.updatedAt) > referenceDate) {
+      try{
+        const response = await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.gettoptags&artist=${encodeURIComponent(track.artist.name)}&track=${encodeURIComponent(track.name)}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+        if (response.data.toptags){
+          var toptags = response.data.toptags.tag.slice(0, 10); //限制最多十个标签
+          toptags = toptags.map(obj => {
+            // 使用解构赋值去掉 'url' 键值对
+            const { url, ...rest } = obj;
+            return rest;
+          });
+          
+          const updatedTags = await Promise.all(toptags.map(async (tagInfo) => {
+            // 在现有标签中查找匹配的标签
+            const lowerCaseName = tagInfo.name.toLowerCase();
+            let existingTag = tagMap.get(lowerCaseName);
+            
+            if (existingTag) {
+              // 如果找到匹配的标签，使用现有的标签 ID
+              // console.log("existing Tags: " + tagInfo.name);
+              return {
+                tag: existingTag._id,
+                name: tagInfo.name,
+                count: Number(tagInfo.count)
+              };
+            } else {
+              // 如果没有找到匹配的标签，创建新的标签
+              // console.log("new Tags: " + tagInfo.name);
+              const newTag = await mongodb.addTag({ name: tagInfo.name, count: tagInfo.count });
+              tags.push(newTag); // 将新标签添加到 allTags 数组中
+              return {
+                tag: newTag._id,
+                name: tagInfo.name,
+                count: Number(tagInfo.count)
+              };
+            }
+          }));
+
+
+          
+          // // 更新 track 的 tags 字段
+          const updatedTrack = await mongodb.updateTrackTags(track._id, updatedTags);
+          console.log(updatedTrack.name);
+        }
+
+      } catch (error) {
+        if (error.response) {
+          console.error('Error making request:', error.response.data);
+        } else {
+          console.error('Error making request:', error);
+        }
+      }
+    }
+  }
+}
+updateTracksTags()
+
 
 exports.updateLyricsFromGenius = async (req, res) => {
   try {
@@ -152,19 +216,7 @@ exports.updateLyricsFromThirdParty = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
 // const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
-
 // 从SQlite文件添加数据到Mysql
 exports.queryMetadata = (req, res) => {
     // logger.log("queryMetadata")
@@ -385,8 +437,6 @@ exports.queryCover = async (req, res) => {
   }
 };
 
-
-
 // 请求网易云API，根据网易云歌手id获取对应歌手的封面
 exports.getArtistsCover = async (req, res) => {
   try {
@@ -461,7 +511,6 @@ exports.getTracks = (req, res) => {
 
   })
 };
-
 
 // 从last.fm获取Tracks Tags
 exports.getTracksTags = async (req, res) => {
@@ -963,3 +1012,4 @@ structureTrack = async (req, res) => {
 //         console.error('解析 JSON 出错:', err);
 //     }
 // })
+

@@ -239,6 +239,18 @@ const getTagById = async (tag) => {
     }
 };
 
+const updateTrackTags = async (track, tags) => {
+    try {
+        return await Track.findByIdAndUpdate(
+            track,
+            { $set: { tags: tags } },
+            { new: true, runValidators: true }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 
 const getTagsByKeyword = async (keyword) => {
     try {
@@ -656,6 +668,8 @@ const addTag = async (tag) => {
         });
         const saveTag = await newTag.save();
         console.log(`标签 "${tag.name}" 已添加。`);
+        return saveTag
+        
     } catch (error) {
         console.error('添加标签时出错：', error);
     }
@@ -706,6 +720,7 @@ module.exports = {
     getLyricTopWords,
     addTrackVec,
     getTrackVecs,
+    updateTrackTags,
     search,
     getHistories,
     addHistory,

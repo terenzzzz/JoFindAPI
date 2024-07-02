@@ -87,8 +87,6 @@ async function updateTracksTags() {
     }
   }
 }
-updateTracksTags()
-
 
 exports.updateLyricsFromGenius = async (req, res) => {
   try {

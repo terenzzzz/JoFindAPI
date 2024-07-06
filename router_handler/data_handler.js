@@ -1,4 +1,4 @@
-// const sqlite3 = require('sqlite3');
+const sqlite3 = require('sqlite3');
 const db = require('../db/index')
 const axios = require('axios');
 const { log } = require('../utils/logger');
@@ -25,7 +25,174 @@ exports.getRecommArtist = async (req, res) => {
   }
 };
 
+async function ArtistSqliteToMongo(){
+    // 导入millionsong dataset 的sqlite文件
+    // 查询语句寻找需要导入到mongodb的歌曲
+    // 请求last.fm 获取相应元数据
+    // 请求last.fm 获取tags
+    // 添加结构化的artist到mongodb
+  console.log("Loading sqlite");
+  const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
+  sqliteDB.all('SELECT * FROM songs WHERE year = 2007', async (err, rows) => {
+    if (err) {
+        console.error(err.message);
+        return;
+    }
+
+    let existArtists = new Set()
+
+    // 遍历 SQLite 查询结果并将数据插入到 MySQL 数据库中
+    for (const row of rows) {  
+      if(row.year == 2007){
+        let summary = ""
+        let published = ""
+        let tags = []
+
+        const encodedArtistName = encodeURIComponent(row.artist_name);
+
+        if(!existArtists.has(encodedArtistName)){
+          // 获取歌手信息
+          let response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodedArtistName}&api_key=f2a3404a320eb80e37ddddd536b3d52c&format=json`);
+          if (response.data.artist) {
+            summary = response.data.artist.bio.summary;
+            published = response.data.artist.bio.published;
+          } else {
+            console.log('Artist not found.');
+          }
+
+          // 获取歌手信息
+          response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist=${encodeURIComponent(row.artist_name)}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+          if (response.data.toptags){
+            tags = response.data.toptags.tag.slice(0, 10); //限制最多十个标签
+            tags = tags.map(obj => {
+              // 使用解构赋值去掉 'url' 键值对
+              const { url, ...rest } = obj;
+              return rest;
+            });
+          }
+
+          let artist = {
+            name: row.artist_name,
+            tags: JSON.stringify(tags),
+            familiarity: row.artist_familiarity,
+            hotness: row.artist_hotttnesss,
+            avatar: "",
+            summary: summary,
+            published: published
+          };
+          const artist_id = await mongodb.addArtist(artist)
+          existArtists.add(encodedArtistName)
+
+        }else{
+          console.log("exited, Skip!");
+        }
+      }
+    }
+  }); 
+}
+
+
+async function TrackSqliteToMongo(){
+  // 导入millionsong dataset 的sqlite文件
+  // 查询语句寻找需要导入到mongodb的歌曲
+  // 请求last.fm 获取相应元数据
+  // 请求last.fm 获取tags
+  // 请求genius 获取相应歌词
+  // 添加结构化的track到mongodb
+  console.log("Loading sqlite");
+  const tracksInDB = await mongodb.getAllTracks()
+  let tracksSet = new Set()
+  for (const track of tracksInDB) {  
+    tracksSet.add(track.name)
+  }
+
+  const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
+  sqliteDB.all('SELECT * FROM songs WHERE year = 2007', async (err, rows) => {
+    if (err) {
+        console.error(err.message);
+        return;
+    }
+    // 遍历 SQLite 查询结果并将数据插入到 MySQL 数据库中
+    for (const row of rows) {  
+      if(row.year == 2007){
+
+        if(!tracksSet.has(row.title)){
+          const encodedArtistName = encodeURIComponent(row.artist_name);
+          const encodedTrackName = encodeURIComponent(row.title);
+
+          let tags = []
+
+          let duration = row.duration
+          let cover = ""
+          let published = ""
+          let summary = ""
+          let lyric = ""
+
+          console.log(`${encodedArtistName} : ${encodedTrackName}`);
+          let response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=ee33544ab78d90ee804a994f3ac302b8&artist=${encodedArtistName}&track=${encodedTrackName}&format=json`);
+          if (response.data.track) {
+            duration = response.data.track.duration;
+            cover = response.data.track.album? response.data.track.album.image.pop()['#text'] : ""
+            if(published = response.data.track.wifi){
+              published = response.data.track.wiki.published
+              summary = response.data.track.wiki.summary
+            }
+          } else {
+            console.log('Track not found.');
+          }
+
+
+          response = await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.gettoptags&artist=${encodedArtistName}&track=${encodedTrackName}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+          if (response.data.toptags){
+            tags = response.data.toptags.tag.slice(0, 10); //限制最多十个标签
+            tags = tags.map(obj => {
+              // 使用解构赋值去掉 'url' 键值对
+              const { url, ...rest } = obj;
+              return rest;
+            });
+          }
+
+          response = await axios.get(`https://api.genius.com/search?q=${encodedArtistName} ${encodedTrackName}`, {
+            headers: {
+                'Authorization': process.env.GENIUS_ACCESS_TOKEN
+            }
+          });
+          if(response.data.response.hits && response.data.response.hits.length > 0){
+            const firstResult = response.data.response.hits[0]
+            const lyricPath = firstResult.result.path
+            lyricAPI = `https://genius.com${lyricPath}`
+            lyric = await extractLyrics(lyricAPI)
+          
+          }
+
+
+          const track = {
+            name: row.title,
+            artist: row.artist_name,
+            cover: cover,
+            album: row.release,
+            duration: duration,
+            summary: summary,
+            year: row.year,
+            published: published,
+            lyric: lyric,
+            tags: JSON.stringify(tags)
+          }
+
+          // console.log(track)
+          await mongodb.addTrack(track)
+        }else{
+          console.log(`Track ${row.title} exist`);
+        }
+
+      } 
+    }
+  }); 
+}
+
+
 async function updateTracksTags() {
+  // 更新数据库中的tags
   const tracks = await mongodb.getAllTracks();
   const referenceDate = new Date('2024-06-24T00:00:00.000Z');
   const tags = await mongodb.getAllTags()
@@ -73,8 +240,8 @@ async function updateTracksTags() {
 
           
           // // 更新 track 的 tags 字段
-          const updatedTrack = await mongodb.updateTrackTags(track._id, updatedTags);
-          console.log(updatedTrack.name);
+          // const updatedTrack = await mongodb.updateTrackTags(track._id, updatedTags);
+          // console.log(updatedTrack.name);
         }
 
       } catch (error) {
@@ -88,7 +255,7 @@ async function updateTracksTags() {
   }
 }
 
-exports.updateLyricsFromGenius = async (req, res) => {
+async function updateCoverFromGenius(){
   try {
     const base_api_url = "https://api.genius.com"
     const base_url = "https://genius.com" 
@@ -100,16 +267,122 @@ exports.updateLyricsFromGenius = async (req, res) => {
       let failed = 0
       let length = tracks.length
 
-      const referenceDate = new Date('2024-06-10T00:00:00.000Z');
+      const referenceDate = new Date('2024-07-03T00:00:00.000Z');
       
       //遍历所有曲目
       for (let track of tracks) {
-          const trackDate = new Date(track.updatedAt);
+          const trackDate = new Date(track.createdAt);
           const artistName = track.artist.name;
           const trackName = track.name;
 
-          if (trackDate < referenceDate) {
+          if (trackDate > referenceDate && track.cover === "") {
           
+            // 调用第三方API获取歌词
+            const api = `${base_api_url}/search?q=${trackName} ${artistName}`
+
+            try {
+              const response = await axios.get(api, {
+                headers: {
+                    'Authorization': access_token
+                }
+              });
+              if(response.data.response.hits){
+                const firstResult = response.data.response.hits[0]
+                const cover = firstResult.result.song_art_image_url
+                const published = firstResult.result.release_date_for_display
+                await mongodb.updateTrackCoverAndPublished(track._id, cover, published)
+                success++
+              }
+            } catch (apiError) {
+              console.error(`Error fetching lyrics for ${trackName} - ${artistName}: ${apiError.message}`);
+              failed++
+            }
+          }
+          
+          console.log(`${success+failed} / ${length} with success: ${success} : failed: ${failed} ${artistName} - ${trackName}`);
+      }
+
+      return res.send({ status: 200, message: 'Success'});
+  } catch (err) {
+      // 捕获和处理错误
+      return res.send({ status: 1, message: err.message });
+  }
+};
+// updateCoverFromGenius()
+
+async function updateArtistCoverFromGenius(){
+  try {
+    const base_api_url = "https://api.genius.com"
+    const access_token = process.env.GENIUS_ACCESS_TOKEN || "";
+
+      //获取所有的曲目
+      const artists = await mongodb.getAllArtists();
+      console.log(`artists length: ${artists.length}`);
+      let success = 0
+      let failed = 0
+      let length = artists.length
+
+      const referenceDate = new Date('2024-07-03T00:00:00.000Z');
+      
+      //遍历所有曲目
+      for (let artist of artists) {
+          const artistDate = new Date(artist.createdAt);
+          const artistName = artist.name;
+
+          if (artistDate > referenceDate && artist.avatar === "") {
+          
+            // 调用第三方API获取歌词
+            const api = `${base_api_url}/search?q=${artistName}`
+
+            try {
+              const response = await axios.get(api, {
+                headers: {
+                    'Authorization': access_token
+                }
+              });
+              if(response.data.response.hits){
+                const firstResult = response.data.response.hits[0]
+                const avatar = firstResult.result.primary_artist.image_url
+                await mongodb.updateArtistAvatar(artist._id, avatar)
+              }
+            } catch (apiError) {
+              console.error(`Error fetching Artist: ${artistName}: ${apiError.message}`);
+              failed++
+            }
+          } 
+          success++
+          console.log(`${success+failed} / ${length} with success: ${success} : failed: ${failed} ${artistName} `);
+      }
+      return 
+  } catch (err) {
+      // 捕获和处理错误
+      return 
+  }
+};
+// updateArtistCoverFromGenius()
+
+async function updateLyricsFromGenius() { 
+  try {
+    const base_api_url = "https://api.genius.com"
+    const base_url = "https://genius.com" 
+    const access_token = process.env.GENIUS_ACCESS_TOKEN || "";
+
+      //获取所有的曲目
+      const tracks = await mongodb.getAllTracks();
+      let success = 0
+      let failed = 0
+      let length = tracks.length
+
+      // const referenceDate = new Date('2024-06-10T00:00:00.000Z');
+      
+      //遍历所有曲目
+      for (let track of tracks) {
+          // const trackDate = new Date(track.updatedAt);
+          const artistName = track.artist.name;
+          const trackName = track.name;
+
+          // if (trackDate < referenceDate) {
+          if (track.lyric === "") {
             // 调用第三方API获取歌词
             const api = `${base_api_url}/search?q=${trackName} ${artistName}`
 
@@ -136,15 +409,16 @@ exports.updateLyricsFromGenius = async (req, res) => {
           console.log(`${success+failed} / ${length} with success: ${success} : failed: ${failed} ${artistName} - ${trackName}`);
       }
 
-      return res.send({ status: 200, message: 'Success'});
+      return 
   } catch (err) {
       // 捕获和处理错误
-      return res.send({ status: 1, message: err.message });
+      return 
   }
 };
+// updateLyricsFromGenius()xs
 
-async function extractLyrics (url) {
-	try {
+async function extractLyrics(url) {
+  try {
 		let { data } = await axios.get(url);
 		const $ = cheerio.load(data);
 		let lyrics = $('div[class="lyrics"]').text().trim();
@@ -160,12 +434,13 @@ async function extractLyrics (url) {
 				}
 			});
 		}
-		if (!lyrics) return null;
-		return lyrics.trim();
-	} catch (e) {
-		throw e;
-	}
-};
+      return lyrics.trim() || "";
+  } catch (e) {
+      console.error("Error:", e.message);
+      return "";
+  }
+}
+
 
 
 
@@ -214,7 +489,7 @@ exports.updateLyricsFromThirdParty = async (req, res) => {
 };
 
 
-// const sqliteDB = new sqlite3.Database('/Users/terenzzzz/Desktop/track_metadata.db');
+
 // 从SQlite文件添加数据到Mysql
 exports.queryMetadata = (req, res) => {
     // logger.log("queryMetadata")

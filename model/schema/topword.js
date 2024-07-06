@@ -6,10 +6,18 @@ const topWordSchema = new mongoose.Schema({
       ref: 'Track',
       required: true
     },
-    topwords: {
-        type: [String], // 假设topwords是一个字符串数组
-        required: true
-    }
+    topwords: [
+      {
+        word:{
+          type: String,
+          required: false
+        },
+        value:{
+          type: Number,
+          require: false
+        }
+      }
+    ]
   }, { timestamps: true });
 
 module.exports = {

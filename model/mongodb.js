@@ -413,6 +413,23 @@ const getAllTracks = async () => {
         console.log(error);
     }
 };
+const updateTrackCoverAndPublished = async (trackId, newCover, newPublished) => {
+    try {
+        const updatedTrack = await Track.findByIdAndUpdate(
+            trackId, 
+            { $set: { 
+                cover: newCover,
+                published: newPublished
+             } 
+            }, 
+            { new: true, useFindAndModify: false }
+        );
+        return updatedTrack;
+    } catch (error) {
+        console.error('Error updating track:', error);
+        throw error;
+    }
+};
 
 const updateLyric = async (trackId, newLyric) => {
     try {
@@ -522,6 +539,15 @@ const getRandomTracks = async () => {
 //     }
 // };
 
+
+const getAllArtists = async () => {
+    try {
+        return await Artist.find();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getArtist = async (id) => {
     // Update Algorithm
     try {
@@ -564,6 +590,24 @@ const getArtistsByTags = async (tags) => {
         throw error; // Optionally rethrow the error to handle it further up the call stack
     }
 };
+
+const updateArtistAvatar = async (artistId, newAvatar) => {
+    try {
+        const updatedArtist = await Artist.findByIdAndUpdate(
+            artistId, 
+            { $set: { 
+                avatar: newAvatar
+             } 
+            }, 
+            { new: true, useFindAndModify: false }
+        );
+        return updatedArtist;
+    } catch (error) {
+        console.error('Error updating track:', error);
+        throw error;
+    }
+};
+
 /* Rating Function */
 const getRating = async (user,item,itemType) => {
     try {
@@ -626,9 +670,16 @@ const addRating = async (item) => {
 
 
 /* Data Prepare Function */
-const addArtist = async (artist)=>{
+const addArtist = async (artist) => {
     try {
-        var tags = JSON.parse(artist.tags)
+        // Check if the artist already exists in the database
+        let existingArtist = await Artist.findOne({ name: artist.name });
+        if (existingArtist) {
+            console.log(`Artist "${artist.name}" already exists in the database.`);
+            return existingArtist._id; // Return existing artist's ID
+        }
+
+        var tags = JSON.parse(artist.tags);
 
         const newArtist = new Artist({
             name: artist.name,
@@ -640,7 +691,7 @@ const addArtist = async (artist)=>{
             published: artist.published
         });
 
-        if(tags != null){
+        if (tags != null) {
             for (const tagInfo of tags) {
                 const tag = await Tag.findOne({ name: tagInfo.name });
                 if (tag) {
@@ -651,12 +702,14 @@ const addArtist = async (artist)=>{
                 }
             }
         }
-        console.log(`Artist "${artist.name}" 已添加。`);
-        return await newArtist.save()
-        
-    }catch(e){
-        console.log(e);
-        return
+
+        await newArtist.save();
+        console.log(`Artist "${artist.name}" has been added to the database.`);
+        return newArtist._id; // Return newly created artist's ID
+
+    } catch (e) {
+        console.error('Error adding artist:', e);
+        return null; // Return null or handle error as appropriate
     }
 }
 
@@ -677,6 +730,13 @@ const addTag = async (tag) => {
 
 const addTrack = async (track)=>{
     try{
+        // Check if the artist already exists in the database
+        let existingTrack = await Track.findOne({ name: track.name });
+        if (existingTrack) {
+            console.log(`Track "${track.name}" already exists in the database.`);
+            return existingTrack._id; // Return existing artist's ID
+        }
+
         var tags = JSON.parse(track.tags)
 
         const newTrack = new Track({
@@ -740,6 +800,8 @@ module.exports = {
     addUser,
     updateSpotifyRefreshToken,
     updateUserTags,
+    getAllArtists,
+    updateArtistAvatar,
     addArtist,
     updateLyric,
     getAllTracks,
@@ -750,6 +812,7 @@ module.exports = {
     getTracksByTag,
     getTracksByTags,
     addTag,
+    updateTrackCoverAndPublished,
     getTracks,
     getRandomTracks,
     getRandomArtists,

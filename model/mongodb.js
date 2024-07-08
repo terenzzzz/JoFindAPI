@@ -14,8 +14,10 @@ const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
 
 const {TopWord} = require("./schema/topword");
-const {WeightedSimilarity} = require("./schema/weightedSimilarity");
-
+// const {WeightedSimilarity} = require("./schema/weightedSimilarity");
+const {TfidfSimilarity} = require("./schema/tfidfSimilarity");
+const {W2vSimilarity} = require("./schema/w2vSimilarity");
+const {LdaSimilarity} = require("./schema/ldaSimilarity");
 
 /* Variables */
 let connected = false;
@@ -453,9 +455,25 @@ const getTracks = async () => {
     }
 };
 
-const getWeightedSimilarities = async (track) => {
+const getTfidfSimilarity = async (track) => {
     try {
-        return await WeightedSimilarity.findOne({track: track}).populate("topsimilar.track");
+        return await TfidfSimilarity.findOne({track: track}).populate("topsimilar.track");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const getW2VSimilarity = async (track) => {
+    try {
+        return await W2vSimilarity.findOne({track: track}).populate("topsimilar.track");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+const getLdaSimilarity = async (track) => {
+    try {
+        return await LdaSimilarity.findOne({track: track}).populate("topsimilar.track");
     } catch (error) {
         console.log(error);
     }
@@ -805,7 +823,9 @@ module.exports = {
     addArtist,
     updateLyric,
     getAllTracks,
-    getWeightedSimilarities,
+    getTfidfSimilarity,
+    getW2VSimilarity,
+    getLdaSimilarity,
     addTrack,
     getTracksByArtist,
     getTrackById,

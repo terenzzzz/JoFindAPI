@@ -19,8 +19,6 @@ router.get('/getTrackById', tracksHandler.getTrackById)
 router.get('/getTracksByTag', tracksHandler.getTracksByTag)
 router.get('/getTracksByTags', tracksHandler.getTracksByTags)
 
-router.get('/getWeightedSimilarities', tracksHandler.getWeightedSimilarities)
-
 
 //共享
 module.exports = router

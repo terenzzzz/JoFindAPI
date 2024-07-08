@@ -4,17 +4,6 @@ const axios = require('axios');
 const mongodb = require("../model/mongodb");
 const { extractKeywords } = require('../utils/lyric/word2vec');
 
-exports.getWeightedSimilarities = async (req, res) => {
-  try{
-    const topSimilarities = await mongodb.getWeightedSimilarities(req.query.track)
-    const topSimilaritiesWithoutValue = topSimilarities.topsimilar.map(similarity => 
-      similarity.track);
-
-    return res.send({ status: 200, message: 'Success', data: topSimilaritiesWithoutValue})
-  }catch(e){
-    return res.send({ status: 1, message: e.message })
-  }
-};
 
 // 获取Tracks
 exports.getLyricTopWords = async (req, res) => {

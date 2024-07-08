@@ -8,9 +8,12 @@ const {generalUpload} = require("../middlewares/multer")
 //导入处理函数
 const recommendHandler = require('../router_handler/recommend_handler')
 
+router.get('/getTfidfSimilarity', recommendHandler.getTfidfSimilarity)
+router.get('/getW2VSimilarity', recommendHandler.getW2VSimilarity)
 
 router.get('/get2dModel',recommendHandler.get2dModel)
 router.get('/getSimilarWords',recommendHandler.getSimilarWords)
+router.get('/getLdaSimilarity',recommendHandler.getLdaSimilarity)
 
 
 //共享

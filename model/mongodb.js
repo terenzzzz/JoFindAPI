@@ -457,7 +457,16 @@ const getTracks = async () => {
 
 const getTfidfSimilarity = async (track) => {
     try {
-        return await TfidfSimilarity.findOne({track: track}).populate("topsimilar.track");
+        return await TfidfSimilarity.findOne({track: track})
+        .populate({
+            path: 'topsimilar',
+            populate: {
+                path: 'track',
+                populate: {
+                    path: 'artist'
+                }
+            }
+        });
     } catch (error) {
         console.log(error);
     }
@@ -465,7 +474,16 @@ const getTfidfSimilarity = async (track) => {
 
 const getW2VSimilarity = async (track) => {
     try {
-        return await W2vSimilarity.findOne({track: track}).populate("topsimilar.track");
+        return await W2vSimilarity.findOne({track: track})
+        .populate({
+            path: 'topsimilar',
+            populate: {
+                path: 'track',
+                populate: {
+                    path: 'artist'
+                }
+            }
+        });
     } catch (error) {
         console.log(error);
     }
@@ -473,7 +491,16 @@ const getW2VSimilarity = async (track) => {
 
 const getLdaSimilarity = async (track) => {
     try {
-        return await LdaSimilarity.findOne({track: track}).populate("topsimilar.track");
+        return await LdaSimilarity.findOne({track: track})
+        .populate({
+            path: 'topsimilar',
+            populate: {
+                path: 'track',
+                populate: {
+                    path: 'artist'
+                }
+            }
+        });
     } catch (error) {
         console.log(error);
     }

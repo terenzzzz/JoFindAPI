@@ -14,7 +14,7 @@ const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
 
 const {TopWord} = require("./schema/topword");
-// const {WeightedSimilarity} = require("./schema/weightedSimilarity");
+const {WeightedSimilarity} = require("./schema/weightedSimilarity");
 const {TfidfSimilarity} = require("./schema/tfidfSimilarity");
 const {W2vSimilarity} = require("./schema/w2vSimilarity");
 const {LdaSimilarity} = require("./schema/ldaSimilarity");
@@ -506,6 +506,23 @@ const getLdaSimilarity = async (track) => {
     }
 };
 
+const getWeightedSimilarity = async (track) => {
+    try {
+        return await WeightedSimilarity.findOne({track: track})
+        .populate({
+            path: 'topsimilar',
+            populate: {
+                path: 'track',
+                populate: {
+                    path: 'artist'
+                }
+            }
+        });
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 const getTracksByArtist = async (artist) => {
     try {
         return await Track.find({artist: artist}).populate("artist").populate("tags").populate("tags.tag").limit(50);
@@ -853,6 +870,7 @@ module.exports = {
     getTfidfSimilarity,
     getW2VSimilarity,
     getLdaSimilarity,
+    getWeightedSimilarity,
     addTrack,
     getTracksByArtist,
     getTrackById,

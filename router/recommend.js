@@ -14,6 +14,7 @@ router.get('/getW2VSimilarity', recommendHandler.getW2VSimilarity)
 router.get('/get2dModel',recommendHandler.get2dModel)
 router.get('/getSimilarWords',recommendHandler.getSimilarWords)
 router.get('/getLdaSimilarity',recommendHandler.getLdaSimilarity)
+router.get('/getWeightedSimilarity',recommendHandler.getWeightedSimilarity)
 
 
 //共享

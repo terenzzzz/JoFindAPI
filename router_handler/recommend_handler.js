@@ -3,6 +3,40 @@ const axios = require('axios');
 const mongodb = require("../model/mongodb")
 const {getReduceDimension} = require("../utils/lyric/dimReductor") 
 const {getSimilarWords} = require("../utils/lyric/word2vec") 
+require('dotenv').config()
+const recommend_api_url = process.env.MODEL_API 
+
+
+exports.getTfidfRecommend = async (req, res) => {
+    try{
+        // Extract the lyric parameter from the request
+        const { lyric } = req.query;
+
+        // Send GET request to the target server
+        const response = await axios.get(`${recommend_api_url}/getTfidfRecommend`, {
+            params: { lyric: lyric }
+        });
+        const trackIds = response.data.map(item => item.track.$oid);
+
+        // Fetch track details from MongoDB
+        const trackPromises = trackIds.map(id => mongodb.getTrackById(id));
+        const trackDetails = await Promise.all(trackPromises);
+
+        // Replace track IDs with track details
+        const updatedResponse = response.data.map((item, index) => ({
+            similarity: item.similarity,
+            track: trackDetails[index]
+        }));
+
+        // Send the updated response back to the client
+        return res.send({ status: 200, message: 'Success', data: updatedResponse });
+ 
+    }catch(e){
+        return res.send({ status: 1, message: e.message })
+    }
+};
+
+
 
 exports.getTfidfSimilarity = async (req, res) => {
     try{

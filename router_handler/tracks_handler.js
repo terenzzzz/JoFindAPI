@@ -3,10 +3,28 @@ const logger = require('../utils/logger');
 const axios = require('axios');
 const mongodb = require("../model/mongodb");
 const { extractKeywords } = require('../utils/lyric/word2vec');
+require('dotenv').config()
+const recommend_api_url = process.env.MODEL_API 
+
+exports.getTrackTopic = async (req, res) => {
+  try {
+      // Extract the track parameter from the request
+      const { track } = req.query;
+
+      // Send GET request to the target server
+      const response = await axios.get(`${recommend_api_url}/getTrackTopic`, {
+          params: { track: track }
+      });
+
+      // Send the relevant part of the response back to the client
+      return res.send({ status: 200, message: 'Success', data: response.data });
+
+  } catch (e) {
+      return res.send({ status: 1, message: e.message });
+  }
+};
 
 
-
-// 获取Tracks
 exports.getLyricTopWords = async (req, res) => {
   try{
     const topwords = await mongodb.getLyricTopWords(req.query.track)
@@ -25,7 +43,7 @@ exports.getRandomTracks = async (req, res) => {
   }
 }
 
-// 获取Tracks
+
 exports.getTracks = async (req, res) => {
   try{
     const tracks = await mongodb.getTracks()

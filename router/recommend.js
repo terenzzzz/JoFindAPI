@@ -16,6 +16,8 @@ router.get('/getSimilarWords',recommendHandler.getSimilarWords)
 router.get('/getLdaSimilarity',recommendHandler.getLdaSimilarity)
 router.get('/getWeightedSimilarity',recommendHandler.getWeightedSimilarity)
 
+router.get('/getTfidfRecommend',recommendHandler.getTfidfRecommend)
+
 
 //共享
 module.exports = router

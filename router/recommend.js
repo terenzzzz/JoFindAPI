@@ -8,15 +8,15 @@ const {generalUpload} = require("../middlewares/multer")
 //导入处理函数
 const recommendHandler = require('../router_handler/recommend_handler')
 
-router.get('/getTfidfSimilarity', recommendHandler.getTfidfSimilarity)
-router.get('/getW2VSimilarity', recommendHandler.getW2VSimilarity)
-
 router.get('/get2dModel',recommendHandler.get2dModel)
 router.get('/getSimilarWords',recommendHandler.getSimilarWords)
-router.get('/getLdaSimilarity',recommendHandler.getLdaSimilarity)
-router.get('/getWeightedSimilarity',recommendHandler.getWeightedSimilarity)
 
-router.get('/getTfidfRecommend',recommendHandler.getTfidfRecommend)
+router.get('/getTfidfRecommendByTrack', recommendHandler.getTfidfRecommendByTrack)
+router.get('/getW2VRecommendByTrack', recommendHandler.getW2VRecommendByTrack)
+router.get('/getLdaRecommendByTrack',recommendHandler.getLdaRecommendByTrack)
+router.get('/getWeightedRecommendByTrack',recommendHandler.getWeightedRecommendByTrack)
+
+router.post('/getTfidfRecommendByLyrics',generalUpload.none(),recommendHandler.getTfidfRecommendByLyrics)
 
 
 //共享

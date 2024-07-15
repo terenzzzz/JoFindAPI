@@ -7,15 +7,15 @@ require('dotenv').config()
 const recommend_api_url = process.env.MODEL_API 
 
 
-exports.getTfidfRecommend = async (req, res) => {
-    try{
-        // Extract the lyric parameter from the request
-        const { lyric } = req.query;
-
-        // Send GET request to the target server
-        const response = await axios.get(`${recommend_api_url}/getTfidfRecommend`, {
-            params: { lyric: lyric }
+exports.getTfidfRecommendByLyrics = async (req, res) => {
+    try {
+        const { lyric } = req.body; // 从请求体中获取数组
+  
+        // 将数组通过POST请求发送给Flask服务器
+        const response = await axios.post(`${recommend_api_url}/getTfidfRecommendByLyrics`, {
+            lyric: lyric
         });
+
         const trackIds = response.data.map(item => item.track.$oid);
 
         // Fetch track details from MongoDB
@@ -28,17 +28,18 @@ exports.getTfidfRecommend = async (req, res) => {
             track: trackDetails[index]
         }));
 
-        // Send the updated response back to the client
+        //Send the updated response back to the client
         return res.send({ status: 200, message: 'Success', data: updatedResponse });
- 
-    }catch(e){
-        return res.send({ status: 1, message: e.message })
+
+    } catch (e) {
+        console.error('Error:', e); // Print detailed error information
+        return res.send({ status: 1, message: e.message });
     }
 };
 
 
 
-exports.getTfidfSimilarity = async (req, res) => {
+exports.getTfidfRecommendByTrack = async (req, res) => {
     try{
         const topSimilarities = await mongodb.getTfidfSimilarity(req.query.track)
         // console.log(topSimilarities);
@@ -51,7 +52,7 @@ exports.getTfidfSimilarity = async (req, res) => {
     }
 };
 
-exports.getW2VSimilarity = async (req, res) => {
+exports.getW2VRecommendByTrack = async (req, res) => {
     try{
         const topSimilarities = await mongodb.getW2VSimilarity(req.query.track)
         // const topSimilaritiesWithoutValue = topSimilarities.topsimilar.map(similarity => 
@@ -63,7 +64,7 @@ exports.getW2VSimilarity = async (req, res) => {
     }
 };
 
-exports.getLdaSimilarity = async (req, res) => {
+exports.getLdaRecommendByTrack = async (req, res) => {
     try{
         const topSimilarities = await mongodb.getLdaSimilarity(req.query.track)
         // const topSimilaritiesWithoutValue = topSimilarities.topsimilar.map(similarity => 
@@ -75,7 +76,7 @@ exports.getLdaSimilarity = async (req, res) => {
     }
 };
 
-exports.getWeightedSimilarity = async (req, res) => {
+exports.getWeightedRecommendByTrack = async (req, res) => {
     try{
         const topSimilarities = await mongodb.getWeightedSimilarity(req.query.track)
         // const topSimilaritiesWithoutValue = topSimilarities.topsimilar.map(similarity => 

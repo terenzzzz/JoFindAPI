@@ -17,7 +17,8 @@ router.get('/getLdaRecommendByTrack',recommendHandler.getLdaRecommendByTrack)
 router.get('/getWeightedRecommendByTrack',recommendHandler.getWeightedRecommendByTrack)
 
 router.post('/getTfidfRecommendByLyrics',generalUpload.none(),recommendHandler.getTfidfRecommendByLyrics)
-
-
+router.post('/getW2VRecommendByLyrics',generalUpload.none(),recommendHandler.getW2VRecommendByLyrics)
+router.post('/getLDARecommendByLyrics',generalUpload.none(),recommendHandler.getLDARecommendByLyrics)
+router.post('/getWeightedRecommendByLyrics',generalUpload.none(),recommendHandler.getWeightedRecommendByLyrics)
 //共享
 module.exports = router

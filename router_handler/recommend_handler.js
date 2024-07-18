@@ -99,12 +99,11 @@ exports.getLDARecommendByLyrics = async (req, res) => {
 
 exports.getWeightedRecommendByLyrics = async (req, res) => {
     try {
-        const { lyric } = req.body; // 从请求体中获取数组
+        const { lyric, tfidf_weight, w2v_weight, lda_weight } = req.body; // 从请求体中获取数组
   
         // 将数组通过POST请求发送给Flask服务器
-        const response = await axios.post(`${recommend_api_url}/getWeightedRecommendByLyrics`, {
-            lyric: lyric
-        });
+        const response = await axios.post(`${recommend_api_url}/getWeightedRecommendByLyrics`, 
+            { lyric, tfidf_weight, w2v_weight, lda_weight});
 
         const trackIds = response.data.map(item => item.track.$oid);
 
@@ -122,8 +121,25 @@ exports.getWeightedRecommendByLyrics = async (req, res) => {
         return res.send({ status: 200, message: 'Success', data: updatedResponse });
 
     } catch (e) {
-        console.error('Error:', e); // Print detailed error information
-        return res.send({ status: 1, message: e.message });
+        console.error('Error:', e);
+        
+        let errorMessage = 'An unknown error occurred';
+        
+        // 检查是否存在响应数据
+        if (e.response && e.response.data) {
+            // 如果响应数据中有 error 字段，使用它作为错误信息
+            if (e.response.data.error) {
+                errorMessage = e.response.data.error;
+            } else {
+                // 如果没有 error 字段，但有其他数据，将整个数据转为字符串
+                errorMessage = JSON.stringify(e.response.data);
+            }
+        } else if (e.message) {
+            // 如果没有响应数据，但有错误消息，使用错误消息
+            errorMessage = e.message;
+        }
+        
+        return res.status(400).json({ status: 1, message: errorMessage });
     }
 };
 

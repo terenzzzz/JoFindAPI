@@ -2,6 +2,7 @@
 const express = require('express')
 // 创建路由对象
 const router = express.Router()
+const {generalUpload} = require("../middlewares/multer")
 
 //导入处理函数
 const tracksHandler = require('../router_handler/tracks_handler')
@@ -20,6 +21,8 @@ router.get('/getTracksByTag', tracksHandler.getTracksByTag)
 router.get('/getTracksByTags', tracksHandler.getTracksByTags)
 
 router.get('/getTrackTopic', tracksHandler.getTrackTopic)
+router.post('/getTrackTopicByLyric', generalUpload.none(), tracksHandler.getTrackTopicByLyric)
+router.post('/getLyricTopWordsByLyric', generalUpload.none(), tracksHandler.getLyricTopWordsByLyric)
 
 
 //共享

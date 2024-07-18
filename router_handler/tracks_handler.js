@@ -24,6 +24,23 @@ exports.getTrackTopic = async (req, res) => {
   }
 };
 
+exports.getTrackTopicByLyric = async (req, res) => {
+  try {
+      const { lyric } = req.body; // 从请求体中获取数组
+
+      // Send POST request to the target server
+      const response = await axios.post(`${recommend_api_url}/getTrackTopicByLyric`, {
+        lyric: lyric 
+      });
+
+      // Send the relevant part of the response back to the client
+      return res.send({ status: 200, message: 'Success', data: response.data });
+
+  } catch (e) {
+      return res.send({ status: 1, message: e.message });
+  }
+};
+
 
 exports.getLyricTopWords = async (req, res) => {
   try{
@@ -31,6 +48,23 @@ exports.getLyricTopWords = async (req, res) => {
     return res.send({ status: 200, message: 'Success', data: topwords})
   }catch(e){
     return res.send({ status: 1, message: e.message })
+  }
+};
+
+exports.getLyricTopWordsByLyric = async (req, res) => {
+  try {
+      const { lyric } = req.body; // 从请求体中获取数组
+
+      // Send POST request to the target server
+      const response = await axios.post(`${recommend_api_url}/getLyricTopWordsByLyric`, {
+        lyric: lyric 
+      });
+
+      // Send the relevant part of the response back to the client
+      return res.send({ status: 200, message: 'Success', data: response.data });
+
+  } catch (e) {
+      return res.send({ status: 1, message: e.message });
   }
 };
 

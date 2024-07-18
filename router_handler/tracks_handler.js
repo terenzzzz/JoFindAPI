@@ -2,7 +2,6 @@ const db = require('../db/index')
 const logger = require('../utils/logger');
 const axios = require('axios');
 const mongodb = require("../model/mongodb");
-const { extractKeywords } = require('../utils/lyric/word2vec');
 require('dotenv').config()
 const recommend_api_url = process.env.MODEL_API 
 

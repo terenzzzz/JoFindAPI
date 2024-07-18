@@ -1,8 +1,6 @@
 
 const axios = require('axios');
 const mongodb = require("../model/mongodb")
-const {getReduceDimension} = require("../utils/lyric/dimReductor") 
-const {getSimilarWords} = require("../utils/lyric/word2vec") 
 require('dotenv').config()
 const recommend_api_url = process.env.MODEL_API 
 

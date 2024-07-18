@@ -13,11 +13,11 @@ const {PlayListTrack} = require("./schema/playListTrack");
 const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
 
-const {TopWord} = require("./schema/topword");
-const {WeightedSimilarity} = require("./schema/weightedSimilarity");
-const {TfidfSimilarity} = require("./schema/tfidfSimilarity");
-const {W2vSimilarity} = require("./schema/w2vSimilarity");
-const {LdaSimilarity} = require("./schema/ldaSimilarity");
+// const {TopWord} = require("./schema/topword");
+// const {WeightedSimilarity} = require("./schema/weightedSimilarity");
+// const {TfidfSimilarity} = require("./schema/tfidfSimilarity");
+// const {W2vSimilarity} = require("./schema/w2vSimilarity");
+// const {LdaSimilarity} = require("./schema/ldaSimilarity");
 
 /* Variables */
 let connected = false;

@@ -76,7 +76,6 @@ exports.getRandomTracks = async (req, res) => {
   }
 }
 
-
 exports.getTracks = async (req, res) => {
   try{
     const tracks = await mongodb.getTracks()
@@ -94,7 +93,6 @@ exports.getTracksByArtist = async (req, res) => {
     return res.send({ status: 1, message: e.message })
   }
 };
-
 
 exports.getTrackById = async (req, res) => {
   try{

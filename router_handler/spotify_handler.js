@@ -8,6 +8,7 @@ const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URL;
 const {getLyric} = require('../router_handler/genius_handler')
+const {getTrackTagsFromLastfm, getArtistTagsFromLastfm} = require('../router_handler/tag_handler')
 
 const generateRandomString = (length) => {
   return crypto
@@ -391,14 +392,15 @@ exports.getSpotifyTrackById = async (req, res) => {
       const artistResponse = await axios.get(artistHref, {
         headers: { 'Authorization': accessToken }
       });
+      // 处理艺人信息
       if (artistResponse.status === 200 && artistResponse.data) {
         let artistData = artistResponse.data
+        var artistTag = await getArtistTagsFromLastfm(artistData.name)
+        artistTag = await converTagExitInDb(artistTag)
         artist = {
           id: artistData.id,
           avatar: artistData.images[0].url,
-          tags: artistData.genres.map((tag) => ({tag:{
-            name: tag,
-          }})),
+          tags: artistTag,
           name: artistData.name,
           hotness: artistData.popularity/100,
           external_urls: artistData.external_urls.spotify
@@ -406,6 +408,9 @@ exports.getSpotifyTrackById = async (req, res) => {
       }
       // 查询歌词
       lyric = await getLyric(artist.name, data.name)
+      trackTag = await getTrackTagsFromLastfm(artist.name,data.name)
+      trackTag = await converTagExitInDb(trackTag)
+      
 
       // 结构化track
       track = {
@@ -418,16 +423,16 @@ exports.getSpotifyTrackById = async (req, res) => {
         duration: data.duration_ms,
         year: data.album.release_date,
         external_urls: data.external_urls.spotify,
-        lyric: lyric
+        lyric: lyric,
+        tags: trackTag
       }
       // 处理Spotify返回的数据
       return res.status(200).send(track);
     } else {
       return res.status(response.status).send({ error: 'Failed to get currently playing track' });
     }
-  } catch (error) {
-    console.error('Error fetching currently playing track:', error);
-    return res.status(500).send({ error: 'Internal Server Error' });
+  } catch (e) {
+    return res.status(400).json({ status: 1, message: e });
   }
 };
 
@@ -530,3 +535,23 @@ exports.getArtistRelatedArtists = async (req, res) => {
   }
 };
 
+
+converTagExitInDb = async (tags) =>{
+  // 使用 Promise.all 和 map 来并行处理所有标签
+  tags = await Promise.all(tags.map(async (tag) => {
+    const dbTag = await mongodb.searchTagByName(tag.name);
+    if (dbTag) {
+      // 如果在数据库中找到标签，使用数据库中的 _id 和 name，但保留原始的 count
+      return {
+        tag: dbTag,
+        count: tag.count
+      };
+    }
+    return dbTag; // 如果在数据库中找到标签，返回数据库中的标签，否则返回 null
+  }));
+  
+  // 过滤掉 null 值，即删除未在数据库中找到的标签
+  tags = tags.filter(tag => tag !== null);
+
+  return tags
+}

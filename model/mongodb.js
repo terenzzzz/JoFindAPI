@@ -253,6 +253,17 @@ const updateTrackTags = async (track, tags) => {
     }
 };
 
+const searchTagByName = async (keyword) => {
+    try {
+        const tag = await Tag.findOne({ name: { $regex: keyword, $options: 'i' } }, '_id name count');
+        return tag ? { _id: tag._id, name: tag.name, count: tag.count } : null;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
 
 const getTagsByKeyword = async (keyword) => {
     try {
@@ -876,6 +887,7 @@ module.exports = {
     getTrackById,
     getTracksByTag,
     getTracksByTags,
+    searchTagByName,
     addTag,
     updateTrackCoverAndPublished,
     getTracks,

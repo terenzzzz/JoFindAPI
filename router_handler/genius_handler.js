@@ -5,10 +5,11 @@ exports.getLyricsFromGenius = async (req, res) => {
     try {
       const artistName =req.query.artist;
       const trackName = req.query.track;
-        //获取所有的曲目
-        let {lyricAPI,lyric} = await this.getLyric(trackName,artistName)
 
-        return res.send({ status: 200, message: 'Success', data:{lyricAPI,lyric}});
+      //获取所有的曲目
+      let {lyricAPI,lyric} = await this.getLyric(trackName,artistName)
+
+      return res.send({ status: 200, message: 'Success', data:{lyricAPI,lyric}});
   
         
     } catch (err) {
@@ -39,7 +40,7 @@ exports.getLyric = async(trackName,artistName) => {
         const firstResult = response.data.response.hits[0]
         const lyricPath = firstResult.result.path
         lyricAPI = `${base_url}${lyricPath}`
-
+        console.log(lyricAPI);
         lyric = await extractLyrics(lyricAPI)    
       }
     } catch (apiError) {

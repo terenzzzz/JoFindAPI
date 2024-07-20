@@ -40,11 +40,10 @@ exports.getLyric = async(trackName,artistName) => {
         const firstResult = response.data.response.hits[0]
         const lyricPath = firstResult.result.path
         lyricAPI = `${base_url}${lyricPath}`
-        console.log(lyricAPI);
         lyric = await extractLyrics(lyricAPI)    
       }
     } catch (apiError) {
-        console.error(`Error fetching lyrics for ${trackName} - ${artistName}: ${apiError.message}`);
+      console.error(`Error fetching lyrics for ${trackName} - ${artistName}: ${apiError.message}`);
     }
     return {lyricAPI,lyric}
 } catch (err) {

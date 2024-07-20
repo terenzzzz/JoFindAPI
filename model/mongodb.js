@@ -8,9 +8,9 @@ const {Artist} = require("./schema/artist");
 const {Tag} = require("./schema/tag");
 const {Track} = require("./schema/track");
 const {User} = require("./schema/user");
-const {PlayList} = require("./schema/playList");
-const {PlayListTrack} = require("./schema/playListTrack");
-const {History} = require("./schema/history");
+// const {PlayList} = require("./schema/playList");
+// const {PlayListTrack} = require("./schema/playListTrack");
+// const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
 
 // const {TopWord} = require("./schema/topword");

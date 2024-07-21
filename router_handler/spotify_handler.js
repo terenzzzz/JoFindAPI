@@ -398,7 +398,7 @@ exports.getSpotifyTrackById = async (req, res) => {
         var artistTag = await getArtistTagsFromLastfm(artistData.name)
         artistTag = await converTagExitInDb(artistTag)
         artist = {
-          id: artistData.id,
+          _id: artistData.id,
           avatar: artistData.images[0].url,
           tags: artistTag,
           name: artistData.name,

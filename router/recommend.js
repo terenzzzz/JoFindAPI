@@ -26,5 +26,9 @@ router.post('/getW2VRecommendArtistsByArtist',generalUpload.none(),recommendHand
 router.post('/getLDARecommendArtistsByArtist',generalUpload.none(),recommendHandler.getLDARecommendArtistsByArtist)
 router.post('/getWeightedRecommendArtistsByArtist',generalUpload.none(),recommendHandler.getWeightedRecommendArtistsByArtist)
 
+router.post('/getTfidfRecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getTfidfRecommendArtistsByLyrics)
+router.post('/getW2VRecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getW2VRecommendArtistsByLyrics)
+router.post('/getLDARecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getLDARecommendArtistsByLyrics)
+router.post('/getWeightedRecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getWeightedRecommendArtistsByLyrics)
 //共享
 module.exports = router

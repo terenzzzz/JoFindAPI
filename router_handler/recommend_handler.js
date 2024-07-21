@@ -3,7 +3,130 @@ const axios = require('axios');
 const mongodb = require("../model/mongodb");
 const { addAbortListener } = require('connect-mongo');
 require('dotenv').config()
-const recommend_api_url = process.env.MODEL_API 
+const recommend_api_url = process.env.MODEL_API
+
+
+exports.getTfidfRecommendArtistsByLyrics = async (req, res) => {
+    try {
+        const { lyrics } = req.body; // 从请求体中获取数组
+  
+        // 将数组通过POST请求发送给Flask服务器
+        const response = await axios.post(`${recommend_api_url}/getTfidfRecommendArtistsByLyrics`, {
+            lyrics: lyrics
+        });
+
+        const artistIds = response.data.map(item => item.artist.$oid);
+
+        // Fetch track details from MongoDB
+        const artistPromises = artistIds.map(id => mongodb.getArtist(id));
+        const artistDetails = await Promise.all(artistPromises);
+
+        // Replace track IDs with track details
+        const updatedResponse = response.data.map((item, index) => ({
+            similarity: item.similarity,
+            artist: artistDetails[index]
+        }));
+
+        //Send the updated response back to the client
+        return res.send({ status: 200, message: 'Success', data: updatedResponse });
+
+    } catch (e) {
+        console.error('Error:', e); // Print detailed error information
+        return res.send({ status: 1, message: e.message });
+    }
+};
+
+exports.getW2VRecommendArtistsByLyrics = async (req, res) => {
+    try {
+        const { lyrics } = req.body; // 从请求体中获取数组
+  
+        // 将数组通过POST请求发送给Flask服务器
+        const response = await axios.post(`${recommend_api_url}/getW2VRecommendArtistsByLyrics`, {
+            lyrics: lyrics
+        });
+
+        const artistIds = response.data.map(item => item.artist.$oid);
+
+        // Fetch track details from MongoDB
+        const artistPromises = artistIds.map(id => mongodb.getArtist(id));
+        const artistDetails = await Promise.all(artistPromises);
+
+        // Replace track IDs with track details
+        const updatedResponse = response.data.map((item, index) => ({
+            similarity: item.similarity,
+            artist: artistDetails[index]
+        }));
+
+        //Send the updated response back to the client
+        return res.send({ status: 200, message: 'Success', data: updatedResponse });
+
+    } catch (e) {
+        console.error('Error:', e); // Print detailed error information
+        return res.send({ status: 1, message: e.message });
+    }
+};
+
+exports.getLDARecommendArtistsByLyrics = async (req, res) => {
+    try {
+        const { lyrics } = req.body; // 从请求体中获取数组
+  
+        // 将数组通过POST请求发送给Flask服务器
+        const response = await axios.post(`${recommend_api_url}/getLDARecommendArtistsByLyrics`, {
+            lyrics: lyrics
+        });
+
+        const artistIds = response.data.map(item => item.artist.$oid);
+
+        // Fetch track details from MongoDB
+        const artistPromises = artistIds.map(id => mongodb.getArtist(id));
+        const artistDetails = await Promise.all(artistPromises);
+
+        // Replace track IDs with track details
+        const updatedResponse = response.data.map((item, index) => ({
+            similarity: item.similarity,
+            artist: artistDetails[index]
+        }));
+
+        //Send the updated response back to the client
+        return res.send({ status: 200, message: 'Success', data: updatedResponse });
+
+    } catch (e) {
+        console.error('Error:', e); // Print detailed error information
+        return res.send({ status: 1, message: e.message });
+    }
+};
+
+exports.getWeightedRecommendArtistsByLyrics = async (req, res) => {
+    try {
+        const { lyrics, tfidf_weight, w2v_weight, lda_weight } = req.body; // 从请求体中获取数组
+  
+        // 将数组通过POST请求发送给Flask服务器
+        const response = await axios.post(`${recommend_api_url}/getWeightedRecommendArtistsByLyrics`, {
+            lyrics, tfidf_weight, w2v_weight, lda_weight
+        });
+
+        const artistIds = response.data.map(item => item.artist.$oid);
+
+        // Fetch track details from MongoDB
+        const artistPromises = artistIds.map(id => mongodb.getArtist(id));
+        const artistDetails = await Promise.all(artistPromises);
+
+        // Replace track IDs with track details
+        const updatedResponse = response.data.map((item, index) => ({
+            similarity: item.similarity,
+            artist: artistDetails[index]
+        }));
+
+        //Send the updated response back to the client
+        return res.send({ status: 200, message: 'Success', data: updatedResponse });
+
+    } catch (e) {
+        console.error('Error:', e); // Print detailed error information
+        return res.send({ status: 1, message: e.message });
+    }
+};
+
+
 
 exports.getTfidfRecommendArtistsByArtist = async (req, res) => {
     try {

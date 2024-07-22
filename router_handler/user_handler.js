@@ -57,7 +57,7 @@ exports.updateTags = async (req, res) => {
         const user = await mongodb.updateUserTags(req.user._id,sortedTagCounts)
 
     
-        return res.send({ status: 200, message: 'Success'})
+        return res.send({ status: 200, message: 'Success', data: user.tags})
     }catch(err){
       return res.send({ status: 1, message: err.message })
     }

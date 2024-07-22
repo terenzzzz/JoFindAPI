@@ -412,7 +412,7 @@ const updateUserTags = async (id, tags) => {
           if (!updatedUser) {
             throw new Error('User not found');
           }
-          return updatedUser;
+          return updatedUser.populate("tags.tag");
     } catch (error) {
         console.log(error);
     }

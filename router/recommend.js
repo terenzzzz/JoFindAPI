@@ -30,5 +30,8 @@ router.post('/getTfidfRecommendArtistsByLyrics',generalUpload.none(),recommendHa
 router.post('/getW2VRecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getW2VRecommendArtistsByLyrics)
 router.post('/getLDARecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getLDARecommendArtistsByLyrics)
 router.post('/getWeightedRecommendArtistsByLyrics',generalUpload.none(),recommendHandler.getWeightedRecommendArtistsByLyrics)
+
+router.post('/getCollaborateSimilarUsersTracks',generalUpload.none(),recommendHandler.getCollaborateSimilarUsersTracks)
+
 //共享
 module.exports = router

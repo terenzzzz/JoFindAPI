@@ -6,6 +6,37 @@ require('dotenv').config()
 const recommend_api_url = process.env.MODEL_API
 
 
+exports.getCollaborateSimilarUsersTracks = async (req, res) => {
+    try {
+        const { user } = req.body; // 从请求体中获取数组
+  
+        // 将数组通过POST请求发送给Flask服务器
+        const response = await axios.post(`${recommend_api_url}/getCollaborateSimilarUsersTracks`, {
+            user: user
+        });
+
+        const similarUsersTracks = response.data.map(item => item.track.$oid);
+
+        // Fetch track details from MongoDB
+        const trackPromises = similarUsersTracks.map(id => mongodb.getTrackById(id));
+        const trackDetails = await Promise.all(trackPromises);
+
+        // Replace track IDs with track details
+        const updatedResponse = response.data.map((item, index) => ({
+            score: item.score,
+            track: trackDetails[index]
+        }));
+
+        //Send the updated response back to the client
+        return res.send({ status: 200, message: 'Success', data: updatedResponse });
+
+    } catch (e) {
+        console.error('Error:', e); // Print detailed error information
+        return res.send({ status: 1, message: e.message });
+    }
+};
+
+
 exports.getTfidfRecommendArtistsByLyrics = async (req, res) => {
     try {
         const { lyrics } = req.body; // 从请求体中获取数组

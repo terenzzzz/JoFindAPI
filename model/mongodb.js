@@ -741,10 +741,10 @@ const addRating = async (item) => {
     }
 };
 
-const deleteRating = async (user, item) => {
+const deleteRating = async (user, item, itemType) => {
     try {
         // 执行查询并删除
-        const rating = await Rating.findOneAndDelete({ user: user, item: item });
+        const rating = await Rating.findOneAndDelete({ user: user, item: item, itemType: itemType });
         return rating;
     } catch (error) {
         console.error('Error in deleteRating:', error);

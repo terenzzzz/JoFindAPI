@@ -22,13 +22,13 @@ exports.addRating = async (req, res) => {
 
 exports.deleteRating = async (req, res) => {
   try {
-      const { user, item } = req.body; // 从请求体中获取user和item
-
+      const { item, itemType } = req.body; // 从请求体中获取user和item
+      const user = req.user._id
       if (!user || !item) {
           return res.status(400).send({ status: 1, message: 'User and item are required.' });
       }
 
-      const deletedRating = await mongodb.deleteRating(user, item);
+      const deletedRating = await mongodb.deleteRating(user, item, itemType);
 
       if (deletedRating) {
           return res.status(200).send({ status: 200, message: 'Success', data: deletedRating });

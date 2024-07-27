@@ -2,6 +2,7 @@
 const axios = require('axios');
 const mongodb = require("../model/mongodb");
 const { addAbortListener } = require('connect-mongo');
+const { log } = require('@tensorflow/tfjs-node');
 require('dotenv').config()
 const recommend_api_url = process.env.MODEL_API
 

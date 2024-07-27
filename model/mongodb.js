@@ -741,6 +741,17 @@ const addRating = async (item) => {
     }
 };
 
+const deleteRating = async (user, item) => {
+    try {
+        // 执行查询并删除
+        const rating = await Rating.findOneAndDelete({ user: user, item: item });
+        return rating;
+    } catch (error) {
+        console.error('Error in deleteRating:', error);
+        throw error;
+    }
+}
+
 
 /* Data Prepare Function */
 const addArtist = async (artist) => {
@@ -897,6 +908,7 @@ module.exports = {
     getArtist,
     addRating,
     getRating,
-    getRatings
+    getRatings,
+    deleteRating
 }
 

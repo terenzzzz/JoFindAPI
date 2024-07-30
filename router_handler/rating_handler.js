@@ -45,8 +45,8 @@ exports.getRating = async (req, res) => {
   try {
     // 获取用户的历史记录
     const rating = await mongodb.getRating(req.user._id, req.query.item, req.query.itemType);
-    
     // 检查是否有历史记录
+    console.log(rating);
     if (rating._id) {
       return res.send({ status: 200, message: 'Success', data: rating });
     } else {

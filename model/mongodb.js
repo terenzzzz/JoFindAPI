@@ -80,46 +80,77 @@ const getLyricTopWords = async (track) => {
 
 
 /* Search Function */
-const search = async (keyword, types, limit) => {
+const search = async (keyword, type, limit) => {
     try {
-      let tracks = [];
-      let artists = [];
-      let lyrics = [];
+        const regex = new RegExp(keyword, 'i');
+        const exactMatch = new RegExp(`^${keyword}$`, 'i');
+        
+        let result = {};
+        
+        const aggregatePipeline = [
+            { $match: { name: regex } },
+            { $addFields: {
+                score: {
+                    $cond: [
+                        { $regexMatch: { input: "$name", regex: exactMatch } },
+                        10,
+                        { $indexOfBytes: [ { $toLower: "$name" }, keyword.toLowerCase() ] }
+                    ]
+                }
+            }},
+            { $sort: { score: 1 } },
+            { $limit: parseInt(limit) }
+        ];
 
-  
-      // 创建正则表达式对象，用于模糊匹配
-      const regex = new RegExp(keyword, 'i');
-  
-      // 根据types数组执行相应的搜索操作
-      if (types.includes('tracks')) {
-        tracks = await Track.find({ name: regex })
-          .populate({
-            path: 'artist',
-          })
-          .limit(limit);
-      }
-  
-      if (types.includes('artists')) {
-        artists = await Artist.find({ name: regex }).limit(limit);
-      }
+        switch(type) {
+            case 'tracks':
+                result.tracks = await Track.aggregate([
+                    ...aggregatePipeline,
+                    { $lookup: {
+                        from: 'artists',
+                        localField: 'artist',
+                        foreignField: '_id',
+                        as: 'artist'
+                    }},
+                    { $unwind: '$artist' }
+                ]);
+                break;
+            case 'artists':
+                result.artists = await Artist.aggregate(aggregatePipeline);
+                break;
+            case 'lyrics':
+                result.lyrics = await Track.aggregate([
+                    { $match: { lyric: regex } },
+                    { $addFields: {
+                        score: {
+                            $cond: [
+                                { $regexMatch: { input: "$lyric", regex: exactMatch } },
+                                10,
+                                { $indexOfBytes: [ { $toLower: "$lyric" }, keyword.toLowerCase() ] }
+                            ]
+                        }
+                    }},
+                    { $sort: { score: 1 } },
+                    { $limit: parseInt(limit) },
+                    { $lookup: {
+                        from: 'artists',
+                        localField: 'artist',
+                        foreignField: '_id',
+                        as: 'artist'
+                    }},
+                    { $unwind: '$artist' }
+                ]);
+                break;
+            default:
+                throw new Error('Invalid search type');
+        }
 
-      if (types.includes('lyrics')) {
-        lyrics = await Track.find({ lyric: { $regex: regex } })
-          .populate({
-            path: 'artist',
-          })
-          .limit(limit);
-      }
-  
-      return {
-        tracks,
-        artists,
-        lyrics
-      };
+        return result;
     } catch (error) {
-      console.log(error);
+        console.error('Search error:', error);
+        throw error;
     }
-  };
+};
 
 /* History Function */
 const getHistories = async (user,startDate,endDate) => {
@@ -692,7 +723,6 @@ const getRating = async (user,item,itemType) => {
         };
         // 执行查询
         const rating = await Rating.findOne(query).populate('item');
-
         return rating;
     } catch (error) {
         console.error('Error in getRating:', error);

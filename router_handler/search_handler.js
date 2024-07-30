@@ -6,17 +6,9 @@ const mongodb = require("../model/mongodb");
 
 exports.search = async (req, res) => {
   try {
-    const keyword = req.query.keyword;
-    const types = req.query.type instanceof Array ? req.query.type : [req.query.type];
-    const limit = req.query.limit
+    const { keyword, type, limit = 20 } = req.query;
 
-
-    // 检查是否至少有一个类型被提供
-    if (types.length === 0) {
-      return res.send({ status: 400, message: 'Missing type parameter' });
-    }
-
-    const result = await mongodb.search(keyword, types, limit);
+    const result = await mongodb.search(keyword, type, limit);
 
     return res.send({ status: 200, message: 'Success', data: result });
   } catch (err) {

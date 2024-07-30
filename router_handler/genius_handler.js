@@ -8,9 +8,8 @@ exports.getLyricsFromGenius = async (req, res) => {
 
       //获取所有的曲目
       let {lyricAPI,lyric} = await this.getLyric(trackName,artistName)
-
       return res.send({ status: 200, message: 'Success', data:{lyricAPI,lyric}});
-  
+      
         
     } catch (err) {
         // 捕获和处理错误
@@ -20,7 +19,7 @@ exports.getLyricsFromGenius = async (req, res) => {
 
 exports.getLyric = async(trackName,artistName) => {
   try {
-    //获取所有的曲目
+    
     const base_api_url = "https://api.genius.com"
     const base_url = "https://genius.com" 
     const access_token = process.env.GENIUS_ACCESS_TOKEN || "";
@@ -28,7 +27,9 @@ exports.getLyric = async(trackName,artistName) => {
     let lyricAPI = ""
     let lyric = ""
 
-    const api = `${base_api_url}/search?q=${trackName} ${artistName}`
+    const cleanedTrackName = trackName.replace(/\(.*?\)|\[.*?\]/g, '').trim();
+    console.log(`Get lyric for Track: ${cleanedTrackName} : Aritst: ${artistName}`);
+    const api = `${base_api_url}/search?q=${cleanedTrackName} ${artistName}`
 
     try {
       const response = await axios.get(api, {
@@ -43,7 +44,7 @@ exports.getLyric = async(trackName,artistName) => {
         lyric = await extractLyrics(lyricAPI)    
       }
     } catch (apiError) {
-      console.error(`Error fetching lyrics for ${trackName} - ${artistName}: ${apiError.message}`);
+      console.error(`Error fetching lyrics for ${cleanedTrackName} - ${artistName}: ${apiError.message}`);
     }
     return {lyricAPI,lyric}
 } catch (err) {

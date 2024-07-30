@@ -407,7 +407,7 @@ exports.getSpotifyTrackById = async (req, res) => {
         }
       }
       // 查询歌词
-      lyric = await getLyric(artist.name, data.name)
+      lyric = await getLyric(data.name, artist.name)
       trackTag = await getTrackTagsFromLastfm(artist.name,data.name)
       trackTag = await converTagExitInDb(trackTag)
       

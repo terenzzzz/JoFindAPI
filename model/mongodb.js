@@ -82,7 +82,14 @@ const getLyricTopWords = async (track) => {
 /* Search Function */
 const search = async (keyword, type, limit) => {
     try {
-        const regex = new RegExp(keyword, 'i');
+        // 将关键词分割成单词
+        const keywords = keyword.toLowerCase().split(/\s+/);
+        
+        // 创建一个匹配所有关键词的正则表达式 
+        // (?=.*to)：该部分正则表达式的含义是匹配任意字符串中包含字符串"to"的部分
+        const regex = new RegExp(keywords.map(k => `(?=.*${k})`).join(''), 'i');
+        
+        // 创建完全匹配的正则表达式
         const exactMatch = new RegExp(`^${keyword}$`, 'i');
         
         let result = {};
@@ -90,15 +97,33 @@ const search = async (keyword, type, limit) => {
         const aggregatePipeline = [
             { $match: { name: regex } },
             { $addFields: {
+                exactMatch: {
+                    $cond: [
+                        { $regexMatch: { input: "$name", regex: exactMatch } },
+                        1,
+                        0
+                    ]
+                },
                 score: {
                     $cond: [
                         { $regexMatch: { input: "$name", regex: exactMatch } },
-                        10,
-                        { $indexOfBytes: [ { $toLower: "$name" }, keyword.toLowerCase() ] }
+                        0,
+                        {
+                            $reduce: {
+                                input: keywords,
+                                initialValue: 0,
+                                in: {
+                                    $add: [
+                                        "$$value",
+                                        { $indexOfBytes: [ { $toLower: "$name" }, "$$this" ] }
+                                    ]
+                                }
+                            }
+                        }
                     ]
                 }
             }},
-            { $sort: { score: 1 } },
+            { $sort: { exactMatch: -1, score: 1 } },
             { $limit: parseInt(limit) }
         ];
 
@@ -122,15 +147,25 @@ const search = async (keyword, type, limit) => {
                 result.lyrics = await Track.aggregate([
                     { $match: { lyric: regex } },
                     { $addFields: {
+                        exactMatch: {
+                            $cond: [
+                                { $regexMatch: { input: "$lyric", regex: exactMatch } },
+                                1,
+                                0
+                            ]
+                        },
                         score: {
                             $cond: [
                                 { $regexMatch: { input: "$lyric", regex: exactMatch } },
-                                10,
-                                { $indexOfBytes: [ { $toLower: "$lyric" }, keyword.toLowerCase() ] }
+                                0,
+                                { $add: [
+                                    1,
+                                    { $indexOfBytes: [ { $toLower: "$lyric" }, keyword.toLowerCase() ] }
+                                ]}
                             ]
                         }
                     }},
-                    { $sort: { score: 1 } },
+                    { $sort: { exactMatch: -1, score: 1 } },
                     { $limit: parseInt(limit) },
                     { $lookup: {
                         from: 'artists',
@@ -298,14 +333,54 @@ const searchTagByName = async (keyword) => {
 
 const getTagsByKeyword = async (keyword) => {
     try {
-        const tags = await Tag.find({ name: { $regex: keyword, $options: 'i' } }, '_id name count')
-            .sort({ count: -1 })  // Sort by count in descending order
-            .limit(100);           // Limit the results to 100
+        // 将关键词转换为小写
+        const lowercaseKeyword = keyword.toLowerCase();
 
-        return tags.map(tag => ({ _id: tag._id, name: tag.name }));
+        // 创建部分匹配的正则表达式
+        const partialMatchRegex = new RegExp(lowercaseKeyword, 'i');
+        
+        // 创建完全匹配的正则表达式
+        const exactMatchRegex = new RegExp(`^${lowercaseKeyword}$`, 'i');
+
+        // MongoDB 聚合管道
+        const tags = await Tag.aggregate([
+            // 1. 匹配包含关键词的文档
+            { $match: { name: { $regex: partialMatchRegex } } },
+            
+            // 2. 添加 exactMatch 和 score 字段
+            { $addFields: {
+                exactMatch: {
+                    $cond: [
+                        { $regexMatch: { input: "$name", regex: exactMatchRegex } },
+                        1,
+                        0
+                    ]
+                },
+                score: {
+                    $cond: [
+                        { $regexMatch: { input: "$name", regex: exactMatchRegex } },
+                        0,
+                        {
+                            $indexOfBytes: [{ $toLower: "$name" }, lowercaseKeyword]  // 计算部分匹配的位置
+                        }
+                    ]
+                }
+            }},
+
+            // 3. 排序：首先按 exactMatch 降序，然后按 score 升序
+            { $sort: { exactMatch: -1, score: 1, count: -1 } },
+            
+            // 4. 限制返回结果的数量
+            { $limit: 100 },
+
+            // 5. 仅返回需要的字段
+            { $project: { _id: 1, name: 1 } }
+        ]);
+
+        return tags;
     } catch (error) {
         console.log(error);
-        throw error;  // Optionally rethrow the error to handle it further up the call stack
+        throw error;  // 处理错误
     }
 };
 

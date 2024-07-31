@@ -382,9 +382,11 @@ async function updateLyricsFromGenius() {
           const trackName = track.name;
 
           // if (trackDate < referenceDate) {
-          if (track.lyric === "") {
+          // if (track.lyric === "") {
             // 调用第三方API获取歌词
-            const api = `${base_api_url}/search?q=${trackName} ${artistName}`
+            const cleanedTrackName = trackName.replace(/\(.*?\)|\[.*?\]/g, '').trim();
+            console.log(`Get lyric for Track: ${cleanedTrackName} : Aritst: ${artistName}`);
+            const api = `${base_api_url}/search?q=${cleanedTrackName} ${artistName}`
 
             try {
               const response = await axios.get(api, {
@@ -401,10 +403,10 @@ async function updateLyricsFromGenius() {
                 success++
               }
             } catch (apiError) {
-              console.error(`Error fetching lyrics for ${trackName} - ${artistName}: ${apiError.message}`);
+              console.error(`Error fetching lyrics for ${cleanedTrackName} - ${artistName}: ${apiError.message}`);
               failed++
             }
-          }
+          // }
           
           console.log(`${success+failed} / ${length} with success: ${success} : failed: ${failed} ${artistName} - ${trackName}`);
       }
@@ -415,7 +417,6 @@ async function updateLyricsFromGenius() {
       return 
   }
 };
-// updateLyricsFromGenius()xs
 
 async function extractLyrics(url) {
   try {

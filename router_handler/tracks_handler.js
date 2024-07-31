@@ -113,9 +113,8 @@ exports.getTracksByTag = async (req, res) => {
 };
 
 exports.getTracksByTags = async (req, res) => {
-  // req.query.tags: sdjahdjgfka,kjashdkjashd,askdjhasd
-  // => [sdjahdjgfka,kjashdkjashd,askdjhasd]
   try{
+    // [ '65ff68821fb3dffa69e8b523' ]
     const tags = req.query.tags.split(',');
     const tracks = await mongodb.getTracksByTags(tags);
     return res.send({ status: 200, message: 'Success', data: tracks})

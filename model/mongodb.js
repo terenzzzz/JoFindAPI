@@ -12,12 +12,8 @@ const {User} = require("./schema/user");
 // const {PlayListTrack} = require("./schema/playListTrack");
 // const {History} = require("./schema/history");
 const {Rating} = require("./schema/rating");
+const {Topic} = require("./schema/topic");
 
-// const {TopWord} = require("./schema/topword");
-// const {WeightedSimilarity} = require("./schema/weightedSimilarity");
-// const {TfidfSimilarity} = require("./schema/tfidfSimilarity");
-// const {W2vSimilarity} = require("./schema/w2vSimilarity");
-// const {LdaSimilarity} = require("./schema/ldaSimilarity");
 
 /* Variables */
 let connected = false;
@@ -29,6 +25,17 @@ db.once('open', async () => {
     console.log(`Connected to ${process.env.MONGO_CONNECTION}`);
     connected = true;
 });
+
+
+/* Topic Function */
+async function getTopicByTopicId(topic_id) {
+    try {
+        return await Topic.findOne({topic_id: topic_id});
+    } catch (error) {
+        console.log(error);
+    }
+
+}
 
 /* trackVec Function */
 async function addTrackVec(trackId, vector) {
@@ -966,6 +973,7 @@ const addTrack = async (track)=>{
 }
 
 module.exports = {
+    getTopicByTopicId,
     getLyricTopWords,
     addTrackVec,
     getTrackVecs,

@@ -1,18 +1,22 @@
 const mongoose = require('mongoose');
 
-const topWordSchema = new mongoose.Schema({
-    track: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Track',
+const topicSchema = new mongoose.Schema({
+    topic_id: {
+      type: Number,
       required: true
     },
-    topwords: [
+    name: {
+      type: String,
+      required: true,
+      default: ""
+    },
+    words: [
       {
         word:{
           type: String,
           required: false
         },
-        value:{
+        weight:{
           type: Number,
           require: false
         }
@@ -21,5 +25,5 @@ const topWordSchema = new mongoose.Schema({
   }, { timestamps: true });
 
 module.exports = {
-    TopWord: mongoose.model('TopWord', topWordSchema)
+  Topic: mongoose.model('Topic', topicSchema)
 }

@@ -28,12 +28,28 @@ exports.getTrackTopicByLyric = async (req, res) => {
       const { lyric } = req.body; // 从请求体中获取数组
 
       // Send POST request to the target server
-      const response = await axios.post(`${recommend_api_url}/getTrackTopicByLyric`, {
+      const { data } = await axios.post(`${recommend_api_url}/getTrackTopicByLyric`, {
         lyric: lyric 
       });
 
+      // 遍历response并获取代表词
+      const enrichedData = await Promise.all(
+        data.map(async (topic) => {
+          const { topic_id } = topic;
+          
+          // 查询数据库获取代表词
+          const topicDetail = await mongodb.getTopicByTopicId(topic_id);
+          
+          // 返回包含原始数据和代表词的新对象
+          return {
+            ...topic,
+            name: topicDetail.name // 假设代表词字段是'represent_word'
+          };
+        })
+      );
+
       // Send the relevant part of the response back to the client
-      return res.send({ status: 200, message: 'Success', data: response.data });
+      return res.send({ status: 200, message: 'Success', data: enrichedData });
 
   } catch (e) {
       return res.send({ status: 1, message: e.message });

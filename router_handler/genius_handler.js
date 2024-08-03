@@ -38,10 +38,16 @@ exports.getLyric = async(trackName,artistName) => {
         }
       });
       if(response.data.response.hits){
+
         const firstResult = response.data.response.hits[0]
         const lyricPath = firstResult.result.path
         lyricAPI = `${base_url}${lyricPath}`
-        lyric = await extractLyrics(lyricAPI)    
+
+        lyric = await extractLyrics(lyricAPI)  
+        if (lyric === ""){
+          console.log("Try ovh");
+          lyric = await getLyricFromLyricsOVH(cleanedTrackName, artistName)
+        }
       }
     } catch (apiError) {
       console.error(`Error fetching lyrics for ${cleanedTrackName} - ${artistName}: ${apiError.message}`);
@@ -74,6 +80,22 @@ extractLyrics = async(url) => {
 		if (!lyrics) return null;
 		return lyrics.trim();
 	} catch (e) {
-		throw e;
+		return "";
 	}
+};
+
+getLyricFromLyricsOVH = async(trackName,artistName) => {
+  try {
+    try {
+      const api = `https://api.lyrics.ovh/v1/${artistName}/${trackName}`
+      response = await axios.get(api)
+      return response.data.lyrics
+    } catch (apiError) {
+      console.error(`Error fetching lyrics for ${cleanedTrackName} - ${artistName}: ${apiError.message}`);
+    }
+    return {response}
+} catch (err) {
+    // 捕获和处理错误
+    return ""
+}
 };

@@ -804,7 +804,12 @@ const getRating = async (user,item,itemType) => {
             itemType: itemType
         };
         // 执行查询
-        const rating = await Rating.findOne(query).populate('item');
+        const rating = await Rating.findOne(query).populate({
+            path: 'item',
+            populate: {
+              path: 'artist'
+            }
+          });;
         return rating;
     } catch (error) {
         console.error('Error in getRating:', error);
@@ -814,12 +819,22 @@ const getRating = async (user,item,itemType) => {
 
 const getRatings = async (user) => {
     try {
-        // 执行查询
-        const rating = await Rating.find({user: user}).populate('item');
+        // Find ratings for the specified user and populate the 'item' field
+        const ratings = await Rating.find({ user }).populate('item');
 
-        return rating;
+        // Iterate over each rating
+        for (let i = 0; i < ratings.length; i++) {
+            const rating = ratings[i];
+            // Check if item exists and if it has an artist field
+            if (rating.item && rating.item.artist) {
+                // Populate the artist field within the item
+                await rating.populate('item.artist');
+            }
+        }
+
+        return ratings; // Return the entire ratings array
     } catch (error) {
-        console.error('Error in getRating:', error);
+        console.error('Error in getRatings:', error);
         throw error;
     }
 }

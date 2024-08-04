@@ -190,6 +190,78 @@ async function TrackSqliteToMongo(){
   }); 
 }
 
+async function updateCoverFromLastFM(){
+  console.log(`updateCoverFromLastFM`);
+  try{
+    let regex = /https:\/\/images\.genius\.com/;
+    const tracks = await mongodb.getAllTracks();
+    for (let track of tracks) {
+      if (regex.test(track.cover)){
+        // URL 编码 artist 和 track 名称
+        const artistName = encodeURIComponent(track.artist.name);
+        const trackName = encodeURIComponent(track.name);
+
+        console.log(track._id);
+        const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=track.getinfo&artist=${artistName}&track=${trackName}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+        if (response.data.track && response.data.track.album){
+          let cover = response.data.track.album.image;
+          let lastImage = cover[cover.length - 1]['#text'];
+          if (lastImage){
+            await mongodb.updateTrackCoverAndPublished(track._id, lastImage)
+          }
+          
+        }
+        
+      }
+      
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error('Error making request:', error.response.data);
+    } else {
+      console.error('Error making request:', error);
+    }
+    console.log('Pausing for 5 minutes due to error...');
+    // await sleep(3000000); // 暂停五分钟
+  }
+}
+// updateCoverFromLastFM()
+
+async function updateAvatarFromLastFM(){
+  console.log(`updateAvatarFromLastFM`);
+  try{
+    let regex = /https:\/\/images\.genius\.com/;
+    const artists = await mongodb.getAllArtists();
+    for (let artist of artists) {
+      if (regex.test(artist.avatar)){
+        // URL 编码 artist 和 track 名称
+        const artistName = encodeURIComponent(artist.name);
+
+        console.log(artist._id);
+        const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${artistName}&api_key=ee33544ab78d90ee804a994f3ac302b8&format=json`);
+        if (response.data.artist && response.data.artist.image){
+          let avatar = response.data.artist.image;
+          let lastImage = avatar[avatar.length - 1]['#text'];
+          if (lastImage){
+            await mongodb.updateArtistAvatar(artist._id, lastImage)
+          }
+          
+        }
+        
+      }
+      
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error('Error making request:', error.response.data);
+    } else {
+      console.error('Error making request:', error);
+    }
+    console.log('Pausing for 5 minutes due to error...');
+    // await sleep(3000000); // 暂停五分钟
+  }
+}
+// updateAvatarFromLastFM()
 
 async function updateTracksTags() {
   // 更新数据库中的tags

@@ -541,16 +541,27 @@ const getAllTracks = async () => {
 };
 const updateTrackCoverAndPublished = async (trackId, newCover, newPublished) => {
     try {
-        const updatedTrack = await Track.findByIdAndUpdate(
-            trackId, 
-            { $set: { 
-                cover: newCover,
-                published: newPublished
-             } 
-            }, 
-            { new: true, useFindAndModify: false }
-        );
-        return updatedTrack;
+        // 构建更新对象
+        const updateData = {};
+        if (newCover !== undefined) {
+            updateData.cover = newCover;
+        }
+        if (newPublished !== undefined) {
+            updateData.published = newPublished;
+        }
+
+        // 仅在有更新数据时进行更新操作
+        if (Object.keys(updateData).length > 0) {
+            const updatedTrack = await Track.findByIdAndUpdate(
+                trackId,
+                { $set: updateData },
+                { new: true, useFindAndModify: false }
+            );
+            return updatedTrack;
+        } else {
+            // 如果没有要更新的数据，返回 null 或其他适当的响应
+            return null;
+        }
     } catch (error) {
         console.error('Error updating track:', error);
         throw error;
@@ -804,12 +815,14 @@ const getRating = async (user,item,itemType) => {
             itemType: itemType
         };
         // 执行查询
-        const rating = await Rating.findOne(query).populate({
-            path: 'item',
-            populate: {
-              path: 'artist'
-            }
-          });;
+        const rating = await Rating.findOne(query).populate('item')
+        // Check if item exists and if it has an artist field
+        if (rating.item && rating.item.artist) {
+            // Populate the artist field within the item
+            await rating.populate('item.artist');
+        }
+        
+
         return rating;
     } catch (error) {
         console.error('Error in getRating:', error);

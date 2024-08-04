@@ -9,6 +9,8 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URL;
 const {getLyric} = require('../router_handler/genius_handler')
 const {getTrackTagsFromLastfm, getArtistTagsFromLastfm} = require('../router_handler/tag_handler')
+const {convertISOToDate} = require('../utils/timeConverter')
+
 
 const generateRandomString = (length) => {
   return crypto
@@ -112,6 +114,10 @@ exports.refresh_token = async (req, res) => {
 exports.recentlyPlayed = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
   let tracks = []
+  labels = []
+  data = []
+
+  let isStateTime = req.query.isStateTime==="true"? true : false
 
   if (!accessToken) {
     return res.status(400).send({ error: 'Access token is required' });
@@ -125,6 +131,7 @@ exports.recentlyPlayed = async (req, res) => {
       let data = response.data.items
       // 处理Spotify返回的数据
       for (let track of data){
+        played_at = track.played_at
         track = track.track
         trackStructured = {
           _id: track.id,
@@ -136,10 +143,25 @@ exports.recentlyPlayed = async (req, res) => {
           duration: track.duration_ms,
           year: track.album.release_date,
           external_urls: track.external_urls.spotify,
+          played_at: played_at
         }
         tracks.push(trackStructured)
       }
-      return res.status(200).send(tracks);
+      
+      if(isStateTime){
+        let playedAtTimes = tracks.map(track => track.played_at);
+        const result = playedTimeState(playedAtTimes);
+        labels = result.labels;
+        data = result.data;
+      }
+
+      const responseBody = { tracks };
+      if (isStateTime) {
+        responseBody.labels = labels;
+        responseBody.data = data;
+      }
+
+      return res.status(200).send(responseBody);
     } else if (response.status === 204) {
       // No content, meaning no song is currently playing
       return res.status(204).send({ message: 'No content, no song is currently playing' });
@@ -555,3 +577,38 @@ converTagExitInDb = async (tags) =>{
 
   return tags
 }
+
+
+const playedTimeState = (times) => {
+  let dictionary = {};
+
+
+  // 遍历时间数组，统计每个月的听歌次数
+  times.forEach(time => {
+    const dateKey = convertISOToDate(time);
+    dictionary[dateKey] = (dictionary[dateKey] || 0) + 1;
+  });
+
+
+  // 将字典转换为排序后的 labels 和 data 数组
+  const sortedEntries = Object.entries(dictionary).sort(([a], [b]) => a.localeCompare(b));
+  
+  return {
+    labels: sortedEntries.map(([date]) => date),
+    data: sortedEntries.map(([, count]) => count),
+  };
+};
+
+// const times = [
+//   "2024-01-15T10:30:00",
+//   "2024-01-15T15:45:00",
+//   "2024-01-16T09:00:00",
+//   "2024-01-17T14:20:00",
+//   "2024-01-17T18:30:00",
+//   "2024-01-18T11:00:00",
+//   "2024-01-18T16:15:00",
+//   "2024-01-19T20:00:00"
+// ];
+
+// const result = playedTimeState(times);
+// console.log(result);

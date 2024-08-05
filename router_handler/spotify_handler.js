@@ -113,57 +113,53 @@ exports.refresh_token = async (req, res) => {
 
 exports.recentlyPlayed = async (req, res) => {
   const accessToken = req.query.access_token || req.headers.authorization;
-  let tracks = []
-  labels = []
-  data = []
-
-  let isStateTime = req.query.isStateTime==="true"? true : false
-
   if (!accessToken) {
     return res.status(400).send({ error: 'Access token is required' });
   }
+
+  const isStateTime = req.query.isStateTime === "true";
+  const isStateYear = req.query.isStateYear === "true";
 
   try {
     const response = await axios.get('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
       headers: { 'Authorization': accessToken }
     });
+
     if (response.status === 200 && response.data) {
-      let data = response.data.items
-      // 处理Spotify返回的数据
-      for (let track of data){
-        played_at = track.played_at
-        track = track.track
-        trackStructured = {
-          _id: track.id,
-          uri: track.uri,
-          name: track.name,
-          artist: track.artists[0],
-          cover: track.album.images[0].url,
-          album: track.album.name,
-          duration: track.duration_ms,
-          year: track.album.release_date,
-          external_urls: track.external_urls.spotify,
-          played_at: played_at
-        }
-        tracks.push(trackStructured)
-      }
-      
-      if(isStateTime){
-        let playedAtTimes = tracks.map(track => track.played_at);
-        const result = playedTimeState(playedAtTimes);
-        labels = result.labels;
-        data = result.data;
-      }
+      const tracks = response.data.items.map(({ track, played_at }) => ({
+        _id: track.id,
+        uri: track.uri,
+        name: track.name,
+        artist: track.artists[0],
+        cover: track.album.images[0].url,
+        album: {
+          name: track.album.name,
+          release_date: track.album.release_date
+        },
+        duration: track.duration_ms,
+        year: track.album.release_date,
+        external_urls: track.external_urls.spotify,
+        played_at
+      }));
 
       const responseBody = { tracks };
+
       if (isStateTime) {
+        const playedAtTimes = tracks.map(track => track.played_at);
+        const { labels, data } = playedTimeState(playedAtTimes);
         responseBody.labels = labels;
         responseBody.data = data;
       }
 
+      if (isStateYear) {
+        const releaseDates = tracks.map(track => track.album.release_date);
+        const { labels: yearLabels, data: yearData } = mostYearListened(releaseDates);
+        responseBody.yearLabels = yearLabels;
+        responseBody.yearData = yearData;
+      }
+
       return res.status(200).send(responseBody);
     } else if (response.status === 204) {
-      // No content, meaning no song is currently playing
       return res.status(204).send({ message: 'No content, no song is currently playing' });
     } else {
       return res.status(response.status).send({ error: 'Failed to get recently played tracks' });
@@ -581,8 +577,6 @@ converTagExitInDb = async (tags) =>{
 
 const playedTimeState = (times) => {
   let dictionary = {};
-
-
   // 遍历时间数组，统计每个月的听歌次数
   times.forEach(time => {
     const dateKey = convertISOToDate(time);
@@ -599,16 +593,21 @@ const playedTimeState = (times) => {
   };
 };
 
-// const times = [
-//   "2024-01-15T10:30:00",
-//   "2024-01-15T15:45:00",
-//   "2024-01-16T09:00:00",
-//   "2024-01-17T14:20:00",
-//   "2024-01-17T18:30:00",
-//   "2024-01-18T11:00:00",
-//   "2024-01-18T16:15:00",
-//   "2024-01-19T20:00:00"
-// ];
+const mostYearListened = (times) => {
+  let dictionary = {};
 
-// const result = playedTimeState(times);
-// console.log(result);
+  // 遍历时间数组，统计每个年份的出现次数
+  times.forEach(time => {
+    // 提取年份部分
+    const year = time.split('-')[0];
+    dictionary[year] = (dictionary[year] || 0) + 1;
+  });
+
+  // 将字典转换为排序后的 labels 和 data 数组
+  const sortedEntries = Object.entries(dictionary).sort(([a], [b]) => a.localeCompare(b));
+  
+  return {
+    labels: sortedEntries.map(([year]) => year),
+    data: sortedEntries.map(([, count]) => count),
+  };
+};

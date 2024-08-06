@@ -78,14 +78,19 @@ exports.getRatings = async (req, res) => {
 
     const responseBody = { ratedTracks,ratedArtists };
 
-    let keywordStatArray = [];
+    // 关键词分析
     const isStatWords = req.query.isStatWords === "true";
     if (isStatWords) {
-      keywordStatArray = await keywordStat(ratedTracks);
+      const keywordStatArray = await keywordStat(ratedTracks);
+      responseBody.keywordStatArray = keywordStatArray.slice(0,50);
     }
 
-    if (isStatWords) {
-      responseBody.keywordStatArray = keywordStatArray.slice(0,50);
+
+    // 听歌主题分析
+    const isStatTopic = req.query.isStatTopic === "true"; 
+    if (isStatTopic) {
+      const topicArray = await topicStat(ratedTracks);
+      responseBody.topicArray = topicArray;
     }
   
     return res.status(200).send(responseBody);
@@ -93,6 +98,48 @@ exports.getRatings = async (req, res) => {
     return res.send({ status: 1, message: err.message })
   }
 };
+
+const topicStat = async (ratedList) => {
+  let lyrics = []
+  for (const ratedTrack of ratedList) {
+    if (ratedTrack.rate >= 3) {
+      const lyric = ratedTrack.item.lyric;
+      lyrics.push(lyric)
+    }
+  }
+  try {
+    const response = await axios.post(`${recommend_api_url}/getTrackTopicByLyric`, {
+      lyric: lyrics
+    });
+    
+    let topics = response.data;
+
+    // 遍历response并获取代表词
+    const enrichedData = await Promise.all(
+      topics.map(async (topic) => {
+        const { topic_id } = topic;
+        
+        // 查询数据库获取代表词
+        const topicDetail = await mongodb.getTopicByTopicId(topic_id);
+        
+        // 返回包含原始数据和代表词的新对象
+        return {
+          ...topic,
+          name: topicDetail.name // 假设代表词字段是'represent_word'
+        };
+      })
+    );
+
+    let label = enrichedData.map(topic => topic.name)
+    let data = enrichedData.map(topic => topic.probability)
+
+    return {label,data}
+
+  } catch (error) {
+    console.error(error);
+  }
+
+}
 
 const keywordStat = async (ratedList) => {
   let keywordStatArray = [];

@@ -49,6 +49,14 @@ function getCurrentFormattedDate() {
     return `${dayOfWeek}, ${month} ${date}, ${year}`;
 }
 
+const convertISOToTime = (isoString) => {
+    const date = new Date(isoString);
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`; // 格式: 'HH:MM:SS'
+};
+
 function convertISOToDate(isoString) {
     // 将 ISO 8601 格式的字符串转换为 Date 对象
     const date = new Date(isoString);
@@ -81,6 +89,7 @@ module.exports = {
     millisecondsToMMss,
     millisecondsToHHmmss,
     getCurrentFormattedDate,
+    convertISOToTime,
     convertISOToDate,
     convertISOToDateTime
 };

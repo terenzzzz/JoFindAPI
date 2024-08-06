@@ -9,7 +9,7 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URL;
 const {getLyric} = require('../router_handler/genius_handler')
 const {getTrackTagsFromLastfm, getArtistTagsFromLastfm} = require('../router_handler/tag_handler')
-const {convertISOToDate} = require('../utils/timeConverter')
+const {convertISOToDate, convertISOToTime} = require('../utils/timeConverter')
 
 
 const generateRandomString = (length) => {
@@ -117,8 +117,9 @@ exports.recentlyPlayed = async (req, res) => {
     return res.status(400).send({ error: 'Access token is required' });
   }
 
-  const isStateTime = req.query.isStateTime === "true";
-  const isStateYear = req.query.isStateYear === "true";
+  const isStatTime = req.query.isStatTime === "true"; //听歌时间分布
+  const isStatDate = req.query.isStatDate === "true"; //听歌日期统计
+  const isStatYear = req.query.isStatYear === "true"; //听歌年份分布
 
   try {
     const response = await axios.get('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
@@ -144,18 +145,26 @@ exports.recentlyPlayed = async (req, res) => {
 
       const responseBody = { tracks };
 
-      if (isStateTime) {
+      if (isStatDate) {
         const playedAtTimes = tracks.map(track => track.played_at);
-        const { labels, data } = playedTimeState(playedAtTimes);
-        responseBody.labels = labels;
-        responseBody.data = data;
+        const { labels, data } = playedDateStat(playedAtTimes);
+        responseBody.dateLabels = labels;
+        responseBody.dateData = data;
       }
 
-      if (isStateYear) {
+      if (isStatYear) {
         const releaseDates = tracks.map(track => track.album.release_date);
         const { labels: yearLabels, data: yearData } = mostYearListened(releaseDates);
         responseBody.yearLabels = yearLabels;
         responseBody.yearData = yearData;
+      }
+
+      if (isStatTime) {
+        const playedAtTimes = tracks.map(track => track.played_at);
+        const { labels: timeLabels, data: timeData } = playedTimeStat(playedAtTimes);
+        responseBody.timeLabels = timeLabels;
+        responseBody.timeData = timeData;
+
       }
 
       return res.status(200).send(responseBody);
@@ -574,8 +583,44 @@ converTagExitInDb = async (tags) =>{
   return tags
 }
 
+const playedTimeStat = (times) => {
+  let dictionary = {
+    'Morning': 0,
+    'Afternoon': 0,
+    'Evening': 0
+  };
 
-const playedTimeState = (times) => {
+  times.forEach(time => {
+    const date = new Date(time);
+    const hours = date.getUTCHours();
+    console.log();
+    
+    let period;
+    if (hours >= 0 && hours < 12) {
+      period = 'Morning';
+    } else if (hours >= 12 && hours < 18) {
+      period = 'Afternoon';
+    } else {
+      period = 'Evening';
+    }
+    
+    dictionary[period] = (dictionary[period] || 0) + 1;
+  });
+
+  // 将统计结果转化为标签和数据的数组形式
+  const sortedEntries = Object.entries(dictionary).sort(([a], [b]) => {
+    const order = { '早': 1, '中': 2, '晚': 3 };
+    return order[a] - order[b];
+  });
+
+  return {
+    labels: sortedEntries.map(([period]) => period),
+    data: sortedEntries.map(([, count]) => count),
+  };
+};
+
+
+const playedDateStat = (times) => {
   let dictionary = {};
   // 遍历时间数组，统计每个月的听歌次数
   times.forEach(time => {

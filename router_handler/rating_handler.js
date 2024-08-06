@@ -1,6 +1,8 @@
+const { mongo } = require("mongoose");
 const { itemTypes } = require("../model/enum/itemTypes");
 const mongodb = require("../model/mongodb")
-
+const recommend_api_url = process.env.MODEL_API
+const axios = require('axios');
 
 exports.addRating = async (req, res) => {
     try{
@@ -65,6 +67,7 @@ exports.getRatings = async (req, res) => {
     let ratedTracks=[]
     let ratedArtists=[]
 
+
     ratings.forEach(item => {
       if (item.itemType === itemTypes.TRACK) {
         ratedTracks.push(item);
@@ -73,10 +76,71 @@ exports.getRatings = async (req, res) => {
       }
     });
 
+    const responseBody = { ratedTracks,ratedArtists };
 
-    return res.send({ status: 200, message: 'Success', data: {ratedTracks,ratedArtists}})
+    let keywordStatArray = [];
+    const isStatWords = req.query.isStatWords === "true";
+    if (isStatWords) {
+      keywordStatArray = await keywordStat(ratedTracks);
+    }
+
+    if (isStatWords) {
+      responseBody.keywordStatArray = keywordStatArray.slice(0,50);
+    }
+  
+    return res.status(200).send(responseBody);
   }catch(err){
     return res.send({ status: 1, message: err.message })
   }
 };
 
+const keywordStat = async (ratedList) => {
+  let keywordStatArray = [];
+  for (const ratedTrack of ratedList) {
+    if (ratedTrack.rate >= 3) {
+      const trackId = ratedTrack.item._id;
+      const lyric = ratedTrack.item.lyric;
+
+      try {
+        const response = await axios.post(`${recommend_api_url}/getLyricTopWordsByLyric`, {
+          lyric: lyric
+        });
+        
+        const keywords = response.data;
+        keywordStatArray = keywordStatArray.concat(keywords) // Add keyword to keywordStatArray
+
+      } catch (error) {
+        console.error(`Error fetching keywords for track ID ${trackId}:`, error);
+      }
+    }
+  }
+
+  // Aggregate word frequencies
+  const aggregatedData = countWordOccurrences(keywordStatArray);
+  
+  return aggregatedData;
+
+}
+
+const countWordOccurrences = (keywordStatArray) => {
+  const wordCount = new Map();
+
+  keywordStatArray.forEach(({ word }) => {
+    if (wordCount.has(word)) {
+      wordCount.set(word, wordCount.get(word) + 1);
+    } else {
+      wordCount.set(word, 1);
+    }
+  });
+
+  // Convert the Map to an array of objects
+  const wordCountArray = Array.from(wordCount, ([text, count]) => ({
+    word: text,
+    value: count
+  }));
+
+  // Sort the array in descending order based on the count (value)
+  wordCountArray.sort((a, b) => b.value - a.value);
+
+  return wordCountArray;
+};

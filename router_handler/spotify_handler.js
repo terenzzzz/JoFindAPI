@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
   const state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  const scope = 'user-read-private user-read-email user-read-playback-state '
+  const scope = 'user-read-playback-state '
   + 'user-read-recently-played user-top-read user-follow-read user-follow-modify '
   + 'user-read-currently-playing playlist-read-private playlist-read-collaborative ' 
   + 'streaming user-modify-playback-state playlist-modify-public user-library-read'

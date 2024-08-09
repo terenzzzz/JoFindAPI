@@ -32,7 +32,7 @@ exports.updateTags = async (req, res) => {
         let tagsAbove3 = []
         const ratings = await mongodb.getRatings(req.user._id)
         ratings.map(rating => {
-            if(rating.rate>3){
+            if(rating.rate>=3){
                 ratingAbove3.push(rating)
                 rating.item.tags.forEach(tag => tagsAbove3.push(tag.tag))
             }

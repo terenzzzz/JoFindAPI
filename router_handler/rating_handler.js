@@ -142,30 +142,26 @@ const topicStat = async (ratedList) => {
 }
 
 const keywordStat = async (ratedList) => {
-  let keywordStatArray = [];
+
+  let lyrics = []
   for (const ratedTrack of ratedList) {
     if (ratedTrack.rate >= 3) {
-      const trackId = ratedTrack.item._id;
       const lyric = ratedTrack.item.lyric;
-
-      try {
-        const response = await axios.post(`${recommend_api_url}/getLyricTopWordsByLyric`, {
-          lyric: lyric
-        });
-        
-        const keywords = response.data;
-        keywordStatArray = keywordStatArray.concat(keywords) // Add keyword to keywordStatArray
-
-      } catch (error) {
-        console.error(`Error fetching keywords for track ID ${trackId}:`, error);
-      }
+      lyrics.push(lyric)
     }
   }
+  try {
+    const response = await axios.post(`${recommend_api_url}/getLyricTopWordsByLyric`, {
+      lyric: lyrics
+    });
+    
+    const keywords = response.data;
+    return keywords
 
-  // Aggregate word frequencies
-  const aggregatedData = countWordOccurrences(keywordStatArray);
-  
-  return aggregatedData;
+  } catch (error) {
+    console.error(error);
+  }
+  return [];
 
 }
 

@@ -660,9 +660,20 @@ const getWeightedSimilarity = async (track) => {
 
 const getTracksByArtist = async (artist) => {
     try {
-        return await Track.find({artist: artist}).populate("artist").populate("tags").populate("tags.tag").limit(50);
+        // 检查传入的 artist 是否为有效的 ObjectId
+        if (!mongoose.Types.ObjectId.isValid(artist)) {
+            throw new Error('Invalid ObjectId');
+        }
+
+        // 查询数据库
+        return await Track.find({ artist: artist })
+            .populate('artist')
+            .populate('tags')
+            .populate('tags.tag')
+            .limit(50);
     } catch (error) {
         console.log(error);
+        return null; // 根据需求处理错误
     }
 };
 

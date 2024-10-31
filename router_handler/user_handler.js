@@ -1,7 +1,5 @@
 const axios = require('axios');
 const mongodb = require("../model/mongodb");
-const { log } = require('../utils/logger');
-const tag = require('../model/schema/tag');
 
 
 exports.getUser = async (req, res) => {

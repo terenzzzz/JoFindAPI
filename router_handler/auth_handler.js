@@ -1,6 +1,4 @@
-// 导入数据库操作模块
-const db = require('../db/index')
-const logger = require('../utils/logger');
+
 // 导入加密模块
 const bcrypt = require('bcryptjs')
 const joi = require('joi')
@@ -15,8 +13,7 @@ const mongodb = require('../model/mongodb')
 exports.register = async (req, res) => {
     // 密码规则: 8-16个字符，至少1个大写字母，1个小写字母和1个数字
     const requestUser = req.body
-    logger.log(requestUser)
-    logger.log(req.file)
+
 
     // 检测是否被占用
     try{
@@ -34,9 +31,8 @@ exports.register = async (req, res) => {
             name: requestUser.name,
             email: requestUser.email,
             password: bcrypt.hashSync(requestUser.password, 10),
-            avatar: req.file? req.file.path : "",
-            spotify_refresh_token: "",
-            tags: []
+            avatar: req.file? fileToBase64(req.file) : "",
+            role: requestUser.role
         }
 
         var savedUser = await mongodb.addUser(newUser)
@@ -72,11 +68,9 @@ exports.login = async (req, res) => {
         return res.send({
             status: 200,
             message: '登录成功！',
-            user_id: user._id,
-            name: user.name,
+            user: {...userInfo},
             // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀 
             token: 'Bearer ' + tokenStr,
-            spotify_refresh_token: user.spotify_refresh_token || ""
         })
 
     }else{
@@ -84,6 +78,12 @@ exports.login = async (req, res) => {
     }
 }
 
-exports.user = (req, res) => {
+function fileToBase64(file){
+    // 从 req.file.buffer 获取文件内容  
+  const fileBuffer = file.buffer;  
+  
+  // 将 Buffer 转换为 Base64 编码的字符串  
+  const base64String = fileBuffer.toString('base64');  
 
+  return base64String
 }

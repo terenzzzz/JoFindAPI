@@ -45,35 +45,13 @@ app.use('/public/upload', express.static('public/upload'));
 
 //路由模块
 const authRouter = require('./router/auth')
-const trackRouter = require('./router/tracks')
-const artistRouter = require('./router/artist')
-const dataRouter = require('./router/data')
+
 const userRouter = require('./router/user');
-const playListRouter = require('./router/playList');
-const tagRouter = require('./router/tag');
-const historyRouter = require('./router/history');
-const searchRouter = require('./router/search');
-const spotifyRouter = require('./router/spotify');
-const geniusRouter = require('./router/genius');
-const ratingRouter = require('./router/rating');
-const recommendRouter = require('./router/recommend');
 
 
 
-app.use('/api', dataRouter)
 app.use('/api', authRouter)
-
-app.use('/app', searchRouter)
-app.use('/app', trackRouter)
-app.use('/app', artistRouter)
 app.use('/app', userRouter)
-app.use('/app', playListRouter)
-app.use('/app', tagRouter)
-app.use('/app', historyRouter)
-app.use('/app', ratingRouter)
-app.use('/api', spotifyRouter)
-app.use('/api', geniusRouter)
-app.use('/api', recommendRouter)
 
 
 // 错误级别中间件

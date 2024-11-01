@@ -9,7 +9,5 @@ const {generalUpload} = require("../middlewares/multer")
 const userHandler = require('../router_handler/user_handler')
 
 router.get('/getUser', userHandler.getUser)
-router.post('/updateSpotifyRefreshToken',generalUpload.none(), userHandler.updateSpotifyRefreshToken)
-router.post('/updateTags',generalUpload.none(), userHandler.updateTags)
 
 module.exports = router

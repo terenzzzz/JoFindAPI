@@ -5,7 +5,8 @@ require('dotenv').config()
 
 /* Schemas */
 const {User} = require("./schema/user");
-
+const {SeekingStatus} = require("./schema/seekingStatus");
+const {Company} = require("./schema/company");
 
 /* Variables */
 let connected = false;
@@ -18,11 +19,66 @@ db.once('open', async () => {
     connected = true;
 });
 
+/* Company Function */
+const updateCompany = async (id, company) => {
+    try { 
+        var updatedCompany = {}
+        
+        if (company._id !== ""){
+           // 传入了id, 修改该记录  
+            updatedCompany = await Company.findOne({ _id: company._id });  
+            if (updatedCompany) {  
+                Object.assign(updatedCompany, company);  
+                await updatedCompany.save();  
+                console.log('Company updated successfully');  
+            } else {  
+                console.error('Company record not found');  
+            }
+        }else{
+            console.log("no ID");
+            
+            // 没有传入id， 新建company记录并更新对于user
+            const { _id, ...filteredCompany } = company;
+
+            updatedCompany = Company(filteredCompany)
+            await updatedCompany.save()
+    
+            const user = await User.findOne({_id: id})
+            if (user) {  
+                // 更新 user 的 company 属性为新 Company 文档的 _id  
+                user.company = updatedCompany._id;  
+                
+                // 保存更新后的 User 文档  
+                await user.save();  
+                
+                console.log('User company saft successfully');  
+            } else {  
+                console.error('User not found');  
+            }  
+        }
+        return updatedCompany
+        
+    } catch (error) {  
+        console.error('Error updating user company:', error);  
+    }  
+}
+
+
+
+/* SeekingStatus Function */
+const getSeekingStatus = async () => {
+    try {
+        return await SeekingStatus.find()
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 
 /* User Function */
 const getUser = async (id) => {
     try {
-        const user = await User.findOne({_id: id}).populate("tags.tag");
+        const user = await User.findOne({_id: id}).populate("company");
         const { password, ...userWithoutPassword } = user.toObject();
 
         return userWithoutPassword;
@@ -64,47 +120,15 @@ const addUser = async (user) => {
     }
 };
 
-const updateSpotifyRefreshToken = async (id, token) => {
-    try {
-        const updatedUser = await User.findByIdAndUpdate(
-            id,
-            { spotify_refresh_token: token },
-            { new: true } // 返回更新后的文档
-          );
-      
-          if (!updatedUser) {
-            throw new Error('User not found');
-          }
-          return updatedUser;
-    } catch (error) {
-        console.log(error);
-    }
-};
-
-const updateUserTags = async (id, tags) => {
-    try {
-        const updatedUser = await User.findByIdAndUpdate(
-            id,
-            { tags: tags },
-            { new: true } // 返回更新后的文档
-          );
-      
-          if (!updatedUser) {
-            throw new Error('User not found');
-          }
-          return updatedUser.populate("tags.tag");
-    } catch (error) {
-        console.log(error);
-    }
-};
-
 
 module.exports = {
     getUser,
     getUsers,
     getUserByEmail,
     addUser,
-    updateSpotifyRefreshToken,
-    updateUserTags,
+
+    getSeekingStatus,
+
+    updateCompany
 }
 

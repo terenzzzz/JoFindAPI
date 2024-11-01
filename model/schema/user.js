@@ -20,7 +20,25 @@ const userSchema = new mongoose.Schema({
         role: {
             type: Number,
             required: true
-        }
+        },
+        seekingStatus: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'SeekingStatus',
+            required: false
+        },
+        role: {
+            type: Number,
+            required: true
+        },
+        company: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Company',
+            required: false
+        },
+        resume: {
+            type: Number,
+            required: false
+        },
     }, {
         timestamps: true
     }

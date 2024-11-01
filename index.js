@@ -45,13 +45,15 @@ app.use('/public/upload', express.static('public/upload'));
 
 //路由模块
 const authRouter = require('./router/auth')
-
 const userRouter = require('./router/user');
-
+const seekingStatusRouter = require('./router/seekingStatus')
+const companyRouter = require('./router/company')
 
 
 app.use('/api', authRouter)
 app.use('/app', userRouter)
+app.use('/app', seekingStatusRouter)
+app.use('/app', companyRouter)
 
 
 // 错误级别中间件

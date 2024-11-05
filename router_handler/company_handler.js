@@ -9,7 +9,6 @@ exports.updateCompany = async (req, res) => {
         const company = {
             _id: body._id,
             name: body.name,
-            logo: req.file? fileToBase64(req.file) : body.logo,
             founded: body.founded,
             industry: body.industry,
             size: body.size,
@@ -19,13 +18,32 @@ exports.updateCompany = async (req, res) => {
             longitude: body.longitude,
             background: body.background,
         }
-        
+        if(req.file){
+            company["logo"] = fileToBase64(req.file)
+        }
+
         const updatedCompany = await mongodb.updateCompany(req.user._id, company)
         return res.send({ status: 200, message: 'Success', data: updatedCompany})
     }catch(err){
         return res.send({ status: 1, message: err.message })
     }
 };
+
+exports.getCompanyById = async (req, res) => {
+    try{
+        let company = {}
+        if(req.user.role == 1 && req.user.company){
+            company = await mongodb.getCompanyById(req.user.company)
+        }else{
+            return res.send({ status: 1, message: " Not a Company Accound" })
+        }
+        
+        return res.send({ status: 200, message: 'Success', data: company})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};
+
 
 
 function fileToBase64(file){

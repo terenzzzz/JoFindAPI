@@ -5,11 +5,14 @@ const router = express.Router()
 const {generalUpload, upload} = require("../middlewares/multer")
 
 //导入处理函数
-const companyHandler = require('../router_handler/company_handler')
+const jobHandler = require('../router_handler/job_handler')
 
 
-router.post('/updateCompany',upload.single('logo'), companyHandler.updateCompany)
+router.post('/updateJob',generalUpload.none(), jobHandler.updateJob)
+
+
 // Company
-router.get('/getCompanyById', companyHandler.getCompanyById)
+router.get('/getCompanyJobsByCompanyId', jobHandler.getCompanyJobsByCompanyId)
+
 
 module.exports = router

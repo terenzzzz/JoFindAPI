@@ -7,6 +7,7 @@ require('dotenv').config()
 const {User} = require("./schema/user");
 const {SeekingStatus} = require("./schema/seekingStatus");
 const {Company} = require("./schema/company");
+const {Job} = require("./schema/job");
 
 /* Variables */
 let connected = false;
@@ -19,12 +20,50 @@ db.once('open', async () => {
     connected = true;
 });
 
+/* Job Function */
+const updateJob = async (job) => {
+    try { 
+        var updatedJob = {}
+        console.log(job._id);
+        
+        if (job._id){ // 传入了id, 修改该记录  
+            updatedJob = await Job.findOne({ _id: job._id });  
+            if (updatedJob) {  
+                Object.assign(updatedJob, job);  
+                await updatedJob.save();  
+                console.log('Job updated successfully');  
+            } else {  
+                console.error('Job record not found');  
+            }
+        }else{ // 否则添加一个新的记录 
+            updatedJob = Job(job)
+            await updatedJob.save()
+        }
+        return updatedJob
+        
+    } catch (error) {  
+        console.error('Error updating job:', error);  
+    }  
+}
+
+const getCompanyJobsByCompanyId = async (companyId) => {
+    try { 
+        const jobs = await Job.find({company: companyId}).populate("company");
+        return jobs
+    } catch (error) {  
+        console.error('Error Getting Company job:', error);  
+    }  
+}
+
+
+
+
 /* Company Function */
 const updateCompany = async (id, company) => {
     try { 
         var updatedCompany = {}
         
-        if (company._id !== ""){
+        if (company._id){
            // 传入了id, 修改该记录  
             updatedCompany = await Company.findOne({ _id: company._id });  
             if (updatedCompany) {  
@@ -60,6 +99,16 @@ const updateCompany = async (id, company) => {
         
     } catch (error) {  
         console.error('Error updating user company:', error);  
+    }  
+}
+
+const getCompanyById = async (companyId) => {
+    try { 
+        console.log(companyId);
+        
+        return await Company.findById(companyId);
+    } catch (error) {  
+        console.error('Error Getting Company:', error);  
     }  
 }
 
@@ -129,6 +178,10 @@ module.exports = {
 
     getSeekingStatus,
 
-    updateCompany
+    updateCompany,
+    getCompanyById,
+
+    updateJob,
+    getCompanyJobsByCompanyId
 }
 

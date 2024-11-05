@@ -55,6 +55,14 @@ const getCompanyJobsByCompanyId = async (companyId) => {
     }  
 }
 
+const deleteJob = async (jobId) => {
+    try { 
+        return await Job.deleteOne({_id: jobId});
+    } catch (error) {  
+        console.error('Error Getting Company job:', error);  
+    }  
+}
+
 
 
 
@@ -180,6 +188,7 @@ module.exports = {
 
     updateCompany,
     getCompanyById,
+    deleteJob,
 
     updateJob,
     getCompanyJobsByCompanyId

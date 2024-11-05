@@ -9,7 +9,7 @@ const jobHandler = require('../router_handler/job_handler')
 
 
 router.post('/updateJob',generalUpload.none(), jobHandler.updateJob)
-
+router.get('/deleteJob', jobHandler.deleteJob)
 
 // Company
 router.get('/getCompanyJobsByCompanyId', jobHandler.getCompanyJobsByCompanyId)

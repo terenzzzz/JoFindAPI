@@ -31,13 +31,13 @@ exports.getCompanyJobsByCompanyId = async (req, res) => {
     }
 };
 
-
-function fileToBase64(file){
-    // 从 req.file.buffer 获取文件内容  
-  const fileBuffer = file.buffer;  
-  
-  // 将 Buffer 转换为 Base64 编码的字符串  
-  const base64String = fileBuffer.toString('base64');  
-
-  return base64String
-}
+exports.deleteJob = async (req, res) => {
+    try{
+    
+        deletedJob = await mongodb.deleteJob(req.query.job)
+        
+        return res.send({ status: 200, message: 'Success', data: deletedJob})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};

@@ -24,7 +24,7 @@ const jobSchema = new mongoose.Schema({
         },
         degree: {
             type: String,
-            required: false
+            required: true
         },
         location: {
             type: String,

@@ -33,6 +33,40 @@ const getApplicationByUser = async (user) => {
     }  
 }
 
+const getApplicationByCompany = async (company) => {
+    try {         
+        const application = await Application.findOne({company: company})
+        .populate([
+            {
+                path: 'job',
+                populate: { path: 'company' }
+            },
+            {
+                path: 'user'
+            }
+        ]);
+        // 如果填充成功，遍历 user 字段（假设它是一个数组或单个文档）
+        // 并删除每个用户的 password 字段
+        if (application && application.user) {
+            if (Array.isArray(application.user)) {
+                // 如果 user 是一个数组，遍历并删除每个用户的 password
+                application.user = application.user.map(user => {
+                    const { password, ...rest } = user.toObject(); // 使用 toObject() 确保是普通的 JavaScript 对象
+                    return rest;
+                });
+            } else {
+                // 如果 user 是一个单个文档，删除 password 字段
+                const { password, ...rest } = application.user.toObject();
+                application.user = rest;
+            }
+        }
+        return application
+    } catch (error) {  
+        console.error('Error getApplicationByCompany:', error);  
+    }  
+}
+
+
 
 const getApplicationByJob = async (user, job) => {
     try {         
@@ -271,6 +305,7 @@ module.exports = {
     addApplication,
     updateApplicationStep,
     getApplicationByJob,
-    getApplicationByUser
+    getApplicationByUser,
+    getApplicationByCompany
 }
 

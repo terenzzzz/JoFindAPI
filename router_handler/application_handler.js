@@ -47,4 +47,13 @@ exports.getApplicationByUser = async (req, res) => {
     }
 };
 
+exports.getApplicationByCompany = async (req, res) => {
+    try{
+        const applications = await mongodb.getApplicationByCompany(req.user.company)
+        
+        res.send({ status: 200, message: 'Success', data: applications})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};
 

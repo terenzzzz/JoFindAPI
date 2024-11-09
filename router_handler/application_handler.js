@@ -27,6 +27,15 @@ exports.updateApplicationStep = async (req, res) => {
     }
 };
 
+exports.updateApplicationClosed = async (req, res) => {
+    try{
+        const updatedApplication = await mongodb.updateApplicationClosed(req.body.application, req.body.isClosed)
+        return res.send({ status: 200, message: 'Success', data: updatedApplication})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};
+
 exports.getApplicationByJob = async (req, res) => {
     try{
         const job = await mongodb.getApplicationByJob(req.user._id, req.query.job)

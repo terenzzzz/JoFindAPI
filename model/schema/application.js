@@ -20,6 +20,11 @@ const applicationSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    isClosed: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
     }, {
         timestamps: true
     }

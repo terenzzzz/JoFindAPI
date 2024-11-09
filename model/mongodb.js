@@ -118,6 +118,27 @@ const updateApplicationStep = async (application, step) => {
     }  
 }
 
+const updateApplicationClosed = async (application, isClosed) => {
+    try { 
+
+        const updatedApplication = await Application.findByIdAndUpdate(
+            application,  // 要更新的文档的 ID
+            { isClosed },        // 更新的字段和对应的值
+            { new: true }    // 返回更新后的文档
+        );
+
+        if (!updatedApplication) {
+            throw new Error('Application not found');
+        }
+
+        // 返回更新后的文档
+        return updatedApplication;
+        
+    } catch (error) {  
+        console.error('Error updating job:', error);  
+    }  
+}
+updateApplicationClosed
 
 
 
@@ -304,6 +325,7 @@ module.exports = {
 
     addApplication,
     updateApplicationStep,
+    updateApplicationClosed,
     getApplicationByJob,
     getApplicationByUser,
     getApplicationByCompany

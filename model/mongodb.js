@@ -23,7 +23,7 @@ db.once('open', async () => {
 
 /* Application Function */
 const getApplicationByJob = async (user, job) => {
-    try { 
+    try {         
         const existJob = await Application.findOne({user: user, job: job})
         return existJob
     } catch (error) {  
@@ -31,23 +31,24 @@ const getApplicationByJob = async (user, job) => {
     }  
 }
 
-
 const addApplication = async (user, application) => {
     try { 
-        const exist = Application.find({user:user, job: application.job})
-
-        if (!exist){
-            const newApplication = {...application, user: user, step: 0}
-            const addedApplication = Application(newApplication)
+        const exist = await Application.findOne({ user: user, job: application.job }); // 注意：通常user应该是一个对象，这里假设user._id是其唯一标识符
+        
+        if (exist) {
+            console.error('Current user already applied for this job');  
+            return null; // 如果已经存在，则返回null
+        } else {
+            const newApplication = { ...application, user: user, step: 0 }; // 同样，这里假设user._id是用户的唯一标识符
+            const addedApplication = new Application(newApplication);
             
-            return await addedApplication.save()
-        }else{
-            console.error('Current user already apply this job');  
+            const savedApplication = await addedApplication.save();
+            return savedApplication; // 如果保存成功，则返回保存的对象
         }
-
     } catch (error) {  
-        console.error('Error updating job:', error);  
-    }  
+        console.error('Error finding or saving application:', error);  
+        return null; // 如果在查找或保存过程中发生错误，则返回null
+    }
 }
 
 const updateApplicationStep = async (application, step) => {

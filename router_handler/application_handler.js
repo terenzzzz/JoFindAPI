@@ -5,7 +5,7 @@ const mongodb = require("../model/mongodb");
 
 exports.addApplication = async (req, res) => {
     try{
-        const application = { ...req.body };
+        const application = { ...req.body };        
         const addedApplication = await mongodb.addApplication(req.user._id, application)
         if (addedApplication){
             return res.send({ status: 200, message: 'Success', data: addedApplication})

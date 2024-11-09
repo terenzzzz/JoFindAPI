@@ -15,9 +15,7 @@ exports.updateJob = async (req, res) => {
 };
 
 exports.getJobsByCompanyId = async (req, res) => {
-    try{
-        console.log(req.user);
-        
+    try{        
         let companyJobs = []
         if(req.query.company){
             companyJobs = await mongodb.getJobsByCompanyId(req.query.company)

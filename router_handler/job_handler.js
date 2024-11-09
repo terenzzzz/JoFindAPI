@@ -14,18 +14,29 @@ exports.updateJob = async (req, res) => {
     }
 };
 
-exports.getCompanyJobsByCompanyId = async (req, res) => {
+exports.getJobsByCompanyId = async (req, res) => {
     try{
         console.log(req.user);
         
         let companyJobs = []
         if(req.query.company){
-            companyJobs = await mongodb.getCompanyJobsByCompanyId(req.query.company)
+            companyJobs = await mongodb.getJobsByCompanyId(req.query.company)
         }else{
             return res.send({ status: 1, message: "Please Enter Company ID" })
         }
         
         return res.send({ status: 200, message: 'Success', data: companyJobs})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};
+
+exports.getJobs = async (req, res) => {
+    try{
+
+        let jobs = await mongodb.getJobs(req.query.company)
+        
+        return res.send({ status: 200, message: 'Success', data: jobs})
     }catch(err){
         return res.send({ status: 1, message: err.message })
     }

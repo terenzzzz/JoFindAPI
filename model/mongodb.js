@@ -8,6 +8,7 @@ const {User} = require("./schema/user");
 const {SeekingStatus} = require("./schema/seekingStatus");
 const {Company} = require("./schema/company");
 const {Job} = require("./schema/job");
+const {Application} = require("./schema/application");
 
 /* Variables */
 let connected = false;
@@ -20,11 +21,63 @@ db.once('open', async () => {
     connected = true;
 });
 
+/* Application Function */
+const getApplicationByJob = async (user, job) => {
+    try { 
+        const existJob = await Application.findOne({user: user, job: job})
+        return existJob
+    } catch (error) {  
+        console.error('Error updating job:', error);  
+    }  
+}
+
+
+const addApplication = async (user, application) => {
+    try { 
+        const exist = Application.find({user:user, job: application.job})
+
+        if (!exist){
+            const newApplication = {...application, user: user, step: 0}
+            const addedApplication = Application(newApplication)
+            
+            return await addedApplication.save()
+        }else{
+            console.error('Current user already apply this job');  
+        }
+
+    } catch (error) {  
+        console.error('Error updating job:', error);  
+    }  
+}
+
+const updateApplicationStep = async (application, step) => {
+    try { 
+
+        const updatedApplication = await Application.findByIdAndUpdate(
+            application,  // 要更新的文档的 ID
+            { step },        // 更新的字段和对应的值
+            { new: true }    // 返回更新后的文档
+        );
+
+        if (!updatedApplication) {
+            throw new Error('Application not found');
+        }
+
+        // 返回更新后的文档
+        return updatedApplication;
+        
+    } catch (error) {  
+        console.error('Error updating job:', error);  
+    }  
+}
+
+
+
+
 /* Job Function */
 const updateJob = async (job) => {
     try { 
         var updatedJob = {}
-        console.log(job._id);
         
         if (job._id){ // 传入了id, 修改该记录  
             updatedJob = await Job.findOne({ _id: job._id });  
@@ -46,10 +99,18 @@ const updateJob = async (job) => {
     }  
 }
 
-const getCompanyJobsByCompanyId = async (companyId) => {
+const getJobsByCompanyId = async (companyId) => {
     try { 
         const jobs = await Job.find({company: companyId}).populate("company");
         return jobs
+    } catch (error) {  
+        console.error('Error Getting Company job:', error);  
+    }  
+}
+
+const getJobs = async (companyId) => {
+    try { 
+        return await Job.find().populate("company");
     } catch (error) {  
         console.error('Error Getting Company job:', error);  
     }  
@@ -191,6 +252,11 @@ module.exports = {
     deleteJob,
 
     updateJob,
-    getCompanyJobsByCompanyId
+    getJobsByCompanyId,
+    getJobs,
+
+    addApplication,
+    updateApplicationStep,
+    getApplicationByJob
 }
 

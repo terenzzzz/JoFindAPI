@@ -49,6 +49,8 @@ const userRouter = require('./router/user');
 const seekingStatusRouter = require('./router/seekingStatus')
 const companyRouter = require('./router/company')
 const jobRouter = require('./router/job')
+const applicationRouter = require('./router/application')
+
 
 
 app.use('/api', authRouter)
@@ -56,6 +58,8 @@ app.use('/app', userRouter)
 app.use('/app', seekingStatusRouter)
 app.use('/app', companyRouter)
 app.use('/app', jobRouter)
+app.use('/app', applicationRouter)
+
 
 
 // 错误级别中间件

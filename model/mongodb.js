@@ -22,6 +22,18 @@ db.once('open', async () => {
 });
 
 /* Application Function */
+const getApplicationByUser = async (user) => {
+    try {         
+        return await Application.find({user: user}).populate({
+            path: 'job',
+            populate: { path: 'company' }
+          });
+    } catch (error) {  
+        console.error('Error updating job:', error);  
+    }  
+}
+
+
 const getApplicationByJob = async (user, job) => {
     try {         
         const existJob = await Application.findOne({user: user, job: job})
@@ -258,6 +270,7 @@ module.exports = {
 
     addApplication,
     updateApplicationStep,
-    getApplicationByJob
+    getApplicationByJob,
+    getApplicationByUser
 }
 

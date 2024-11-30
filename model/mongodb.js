@@ -33,8 +33,6 @@ const getResume = async (user) => {
     }  
 }
 
-
-
 const updateResume = async (user, resume, avatar) => {
     try {         
         let updatedResume = null;
@@ -242,6 +240,16 @@ const getJobs = async (companyId) => {
     }  
 }
 
+const getJobById = async (id) => {
+    try { 
+        return await Job.findById(id).populate("company");
+    } catch (error) {  
+        console.error('Error Getting Company job:', error);  
+    }  
+}
+
+
+
 const deleteJob = async (jobId) => {
     try { 
         return await Job.deleteOne({_id: jobId});
@@ -380,6 +388,7 @@ module.exports = {
     updateJob,
     getJobsByCompanyId,
     getJobs,
+    getJobById,
 
     addApplication,
     updateApplicationStep,

@@ -40,6 +40,17 @@ exports.getJobs = async (req, res) => {
     }
 };
 
+exports.getJobById = async (req, res) => {
+    try{
+
+        let jobs = await mongodb.getJobById(req.query.id)
+        
+        return res.send({ status: 200, message: 'Success', data: jobs})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};
+
 exports.deleteJob = async (req, res) => {
     try{
     

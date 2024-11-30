@@ -8,6 +8,7 @@ const {generalUpload, upload} = require("../middlewares/multer")
 const resumeRouter = require('../router_handler/resume_handler')
 
 router.get('/getResume', resumeRouter.getResume)
+router.get('/getResumeByUser', resumeRouter.getResumeByUser)
 
 router.post('/updateResume', upload.single('avatar'), resumeRouter.updateResume)
 

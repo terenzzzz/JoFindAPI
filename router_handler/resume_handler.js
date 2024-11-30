@@ -4,13 +4,26 @@ const mongodb = require("../model/mongodb");
 
 exports.getResume = async (req, res) => {
     try{
-        let user_id = req.user._id
+        let user_id = req.user._id // 使用发起请求的用户id
         const resume = await mongodb.getResume(user_id)
         return res.send({ status: 200, message: 'Success', data: resume})
     }catch(err){
         return res.send({ status: 1, message: err.message })
     }
 };
+
+exports.getResumeByUser = async (req, res) => {
+    try{
+        let user_id = req.query.user // 使用输入的用户id
+        console.log(user_id);
+        
+        const resume = await mongodb.getResume(user_id)
+        return res.send({ status: 200, message: 'Success', data: resume})
+    }catch(err){
+        return res.send({ status: 1, message: err.message })
+    }
+};
+
 
 exports.updateResume = async (req, res) => {
     try{

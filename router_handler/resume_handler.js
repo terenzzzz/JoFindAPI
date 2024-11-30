@@ -33,7 +33,7 @@ exports.updateResume = async (req, res) => {
             languageExperience: parsedLanguageExperience,
         };
 
-        let avatarBase64 = req.file ? fileToBase64(req.file) : "";
+        let avatarBase64 = req.file ? fileToBase64(req.file) : null;
 
         const updatedResume = await mongodb.updateResume(req.user._id, resume, avatarBase64) 
         if(updatedResume){

@@ -9,6 +9,8 @@ const {SeekingStatus} = require("./schema/seekingStatus");
 const {Company} = require("./schema/company");
 const {Job} = require("./schema/job");
 const {Application} = require("./schema/application");
+const {Resume} = require("./schema/resume");
+
 
 /* Variables */
 let connected = false;
@@ -20,6 +22,63 @@ db.once('open', async () => {
     console.log(`Connected to ${process.env.MONGO_CONNECTION}`);
     connected = true;
 });
+
+
+/* Resume Function */
+const getResume = async (user) => {
+    try {         
+        return await Resume.findOne({user: user})
+    } catch (error) {  
+        console.error('Error getResume:', error);  
+    }  
+}
+
+
+
+const updateResume = async (user, resume, avatar) => {
+    try {         
+        let updatedResume = null;
+        const exist = await Resume.findOne({ user: user });
+
+        if (exist) {
+            // 如果简历已存在，更新现有的简历
+            console.log("Resume exists, updating...");
+            
+            // 只在 avatar 有数据时才更新 avatar 字段
+            const updateData = { ...resume }; // 先把 resume 中的属性合并
+
+            if (avatar&& avatar !== "") {
+                updateData.avatar = avatar;  // 如果 avatar 有数据，则更新 avatar 字段
+            }
+
+            // 更新简历
+            exist.set(updateData); // 使用 updateData 合并数据
+            updatedResume = await exist.save(); // 保存更新后的简历
+        } else {
+            // 如果简历不存在，创建新简历
+            console.log("Resume not found, creating new one...");
+
+            // 只在 avatar 有数据时才添加 avatar 字段
+            const newResumeData = { 
+                ...resume,        // 将传入的 resume 数据合并
+                user: user,       // 用户信息
+            };
+
+            if (avatar&& avatar !== "") {
+                newResumeData.avatar = avatar;  // 如果 avatar 有数据，则添加 avatar 字段
+            }
+
+            const newResume = new Resume(newResumeData); // 创建新的简历
+            updatedResume = await newResume.save(); // 保存新的简历
+        }
+
+        return updatedResume;
+        
+    } catch (error) {  
+        console.error('Error updating resume:', error); 
+        throw error;  // 可选择重新抛出错误，或返回某个错误响应
+    }  
+};
 
 /* Application Function */
 const getApplicationByUser = async (user) => {
@@ -66,8 +125,6 @@ const getApplicationByCompany = async (company) => {
     }  
 }
 
-
-
 const getApplicationByJob = async (user, job) => {
     try {         
         const existJob = await Application.findOne({user: user, job: job})
@@ -85,7 +142,7 @@ const addApplication = async (user, application) => {
             console.error('Current user already applied for this job');  
             return null; // 如果已经存在，则返回null
         } else {
-            const newApplication = { ...application, user: user, step: 0 }; // 同样，这里假设user._id是用户的唯一标识符
+            const newApplication = { ...application, user: user, step: 1 }; // 同样，这里假设user._id是用户的唯一标识符
             const addedApplication = new Application(newApplication);
             
             const savedApplication = await addedApplication.save();
@@ -138,7 +195,6 @@ const updateApplicationClosed = async (application, isClosed) => {
         console.error('Error updating job:', error);  
     }  
 }
-updateApplicationClosed
 
 
 
@@ -328,6 +384,9 @@ module.exports = {
     updateApplicationClosed,
     getApplicationByJob,
     getApplicationByUser,
-    getApplicationByCompany
+    getApplicationByCompany,
+
+    getResume,
+    updateResume
 }
 

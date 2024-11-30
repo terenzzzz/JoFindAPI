@@ -50,6 +50,7 @@ const seekingStatusRouter = require('./router/seekingStatus')
 const companyRouter = require('./router/company')
 const jobRouter = require('./router/job')
 const applicationRouter = require('./router/application')
+const resumeRouter = require('./router/resume')
 
 
 
@@ -59,6 +60,7 @@ app.use('/app', seekingStatusRouter)
 app.use('/app', companyRouter)
 app.use('/app', jobRouter)
 app.use('/app', applicationRouter)
+app.use('/app', resumeRouter)
 
 
 

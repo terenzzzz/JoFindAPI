@@ -60,6 +60,7 @@ const resumeSchema = new Schema({
         required: true
     },
     name: { type: String, required: true },
+    birth: { type: String, required: true },
     email: { type: String, required: true },
     topDegree: { type: String, required: true },
     phone: { type: String, required: true },

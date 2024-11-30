@@ -47,7 +47,7 @@ const updateResume = async (user, resume, avatar) => {
             // 只在 avatar 有数据时才更新 avatar 字段
             const updateData = { ...resume }; // 先把 resume 中的属性合并
 
-            if (avatar&& avatar !== "") {
+            if (avatar && avatar !== "") {
                 updateData.avatar = avatar;  // 如果 avatar 有数据，则更新 avatar 字段
             }
 
@@ -64,7 +64,7 @@ const updateResume = async (user, resume, avatar) => {
                 user: user,       // 用户信息
             };
 
-            if (avatar&& avatar !== "") {
+            if (avatar && avatar !== "") {
                 newResumeData.avatar = avatar;  // 如果 avatar 有数据，则添加 avatar 字段
             }
 

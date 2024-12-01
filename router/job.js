@@ -13,7 +13,9 @@ router.get('/deleteJob', jobHandler.deleteJob)
 router.get('/getJobs', jobHandler.getJobs)
 router.get('/getJobById', jobHandler.getJobById)
 
-// Company
+router.get('/getJobsByRole', jobHandler.getJobsByRole)
+
+
 router.get('/getJobsByCompanyId', jobHandler.getJobsByCompanyId)
 
 

@@ -248,6 +248,77 @@ const getJobById = async (id) => {
     }  
 }
 
+const getJobsByRole = async (keyword) => {
+    try {
+        keyword = keyword? keyword : "" // 确保keyword有值
+        // 转义关键词中的特殊字符
+        const escapeRegExp = (str) => str.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
+        const keywords = keyword.toLowerCase().split(/\s+/).map(escapeRegExp);
+
+        // 创建匹配所有关键词的正则表达式
+        const regex = new RegExp(keywords.join('.*'), 'i'); // 这里改成 .*，以保证关键词之间能有字符
+
+        // 创建完全匹配的正则表达式
+        const exactMatch = new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'i'); // 完全匹配的正则表达式
+
+        let result = {};
+
+        const aggregatePipeline = [
+            { $match: { role: regex } }, // 确保是匹配 role 字段
+            { $addFields: {
+                exactMatch: {
+                    $cond: [
+                        { $regexMatch: { input: "$role", regex: exactMatch } },
+                        1,
+                        0
+                    ]
+                },
+                score: {
+                    $cond: [
+                        { $regexMatch: { input: "$role", regex: exactMatch } },
+                        0,
+                        {
+                            $reduce: {
+                                input: keywords,
+                                initialValue: 0,
+                                in: {
+                                    $add: [
+                                        "$$value",
+                                        { $indexOfBytes: [ { $toLower: "$role" }, "$$this" ] }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }},
+            { $sort: { exactMatch: -1, score: 1 } }, // 排序时，先按照 exactMatch 排序，再按照 score 排序
+            { 
+                $lookup: {
+                    from: 'companies',       // 连接的目标集合
+                    localField: 'company',   // 当前集合中的字段（company，存储的是 ObjectId）
+                    foreignField: '_id',     // 目标集合中的字段（通常是 _id）
+                    as: 'company'           // 将匹配到的文档存入 company 字段
+                }
+            },
+            { 
+                $unwind: '$company'        // 展开 company 数组，返回单个文档
+            }
+        ];
+
+        result = await Job.aggregate(aggregatePipeline)
+
+
+        return result;
+    } catch (error) {
+        console.error('Search error:', error);
+        throw error;
+    }
+};
+
+
+
+
 
 
 const deleteJob = async (jobId) => {
@@ -398,6 +469,8 @@ module.exports = {
     getApplicationByCompany,
 
     getResume,
-    updateResume
+    updateResume,
+
+    getJobsByRole
 }
 

@@ -46,6 +46,7 @@ const companyRouter = require('./router/company');
 const jobRouter = require('./router/job');
 const applicationRouter = require('./router/application');
 const resumeRouter = require('./router/resume');
+const chatRouter = require('./router/chat');
 
 app.use('/api', authRouter);
 app.use('/app', userRouter);
@@ -54,6 +55,7 @@ app.use('/app', companyRouter);
 app.use('/app', jobRouter);
 app.use('/app', applicationRouter);
 app.use('/app', resumeRouter);
+app.use('/app', chatRouter);
 
 // 错误级别中间件
 app.use((err, req, res, next) => {

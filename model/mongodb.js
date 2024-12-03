@@ -10,6 +10,8 @@ const {Company} = require("./schema/company");
 const {Job} = require("./schema/job");
 const {Application} = require("./schema/application");
 const {Resume} = require("./schema/resume");
+const {Chatroom} = require("./schema/chatroom");
+const {Message} = require("./schema/message");
 
 
 /* Variables */
@@ -22,6 +24,73 @@ db.once('open', async () => {
     console.log(`Connected to ${process.env.MONGO_CONNECTION}`);
     connected = true;
 });
+
+
+/* Chat Room */
+const createRoom = async (seeker, company) => {
+    try {         
+        // console.log(seeker, company);
+        
+        const exist = await Chatroom.findOne({seeker: seeker, company: company})
+        if (exist) {
+            return exist._id
+        } else {
+            console.log("Chatroom not found, creating new one...");
+
+            const newChatRoomData = { 
+                seeker: seeker,        
+                company: company,       
+            };
+            const newChatRoom = new Chatroom(newChatRoomData); // 创建新的简历
+            await newChatRoom.save()
+            return newChatRoom._id
+        }
+
+    } catch (error) {  
+        console.error('Error getResume:', error);  
+    }  
+}
+
+
+const getChatRoomBySeeker = async (user) => {
+    try {         
+        return await Chatroom.find({seeker: user}).populate("seeker").populate("company")
+    } catch (error) {  
+        console.error('Error getResume:', error);  
+    }  
+}
+
+const getChatRoomByCompany = async (user) => {
+    try {         
+        return await Chatroom.find({company: user}).populate("seeker").populate("company")
+    } catch (error) {  
+        console.error('Error getResume:', error);  
+    }  
+}
+
+const createMsg = async (chatroom, user, msg) => {
+    try {         
+        const newMsgData = { 
+            chatroom: chatroom,     
+            sender: user,      
+            message: msg,       
+        };
+        const newMsg = new Message(newMsgData); // 创建新的简历
+        await newMsg.save()
+        return newMsg
+    } catch (error) {  
+        console.error('Error getResume:', error);  
+    }  
+}
+
+const getMsgByChatRoom = async (chatroom) => {
+    try {         
+      return await Message.find({chatroom: chatroom}).populate('sender')
+    } catch (error) {  
+        console.error('Error getResume:', error);  
+    }  
+}
+
 
 
 /* Resume Function */
@@ -317,10 +386,6 @@ const getJobsByRole = async (keyword) => {
 };
 
 
-
-
-
-
 const deleteJob = async (jobId) => {
     try { 
         return await Job.deleteOne({_id: jobId});
@@ -328,9 +393,6 @@ const deleteJob = async (jobId) => {
         console.error('Error Getting Company job:', error);  
     }  
 }
-
-
-
 
 /* Company Function */
 const updateCompany = async (id, company) => {
@@ -385,8 +447,6 @@ const getCompanyById = async (companyId) => {
         console.error('Error Getting Company:', error);  
     }  
 }
-
-
 
 /* SeekingStatus Function */
 const getSeekingStatus = async () => {
@@ -471,6 +531,12 @@ module.exports = {
     getResume,
     updateResume,
 
-    getJobsByRole
+    getJobsByRole,
+
+    createRoom,
+    getChatRoomBySeeker,
+    getChatRoomByCompany,
+    createMsg,
+    getMsgByChatRoom
 }
 

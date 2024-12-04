@@ -1,5 +1,6 @@
 // socketIo/index.js
 const socketIo = require('socket.io');
+const mongodb = require("../model/mongodb");
 
 
 module.exports = function (server) {
@@ -17,16 +18,10 @@ module.exports = function (server) {
   io.sockets.on('connection', function (socket) {
      console.log(`New client connected: ${socket.id}`);
 
-    /**
-     * 创建或加入房间
-     * 房间名是根据两个用户的 userId 动态生成的
-     */
     socket.on('create or join', function (room) {
       try {
-        const users = room.split("-")
         socket.join(room);
-        io.sockets.to(room).emit('joined', room, users[0], users[1]);
-        console.log(`created room ${room}`);
+        io.sockets.to(room).emit('joined', room);
       } catch (e) {
         console.error("Error in 'create or join': ", e);
         socket.emit('error', { message: 'An error occurred while joining the room.' });
@@ -36,14 +31,21 @@ module.exports = function (server) {
     /**
      * 发送聊天消息
      */
-    socket.on('chat', function (room, userId, chatText) {
+    socket.on('send msg', async function (room, sender, chatText) {
       try {
-        if (!room || !userId || !chatText) {
-          console.error("Invalid chat data:", { room, userId, chatText });
+        // 检查消息合法性
+        if (!room || !sender || !chatText) {
+          console.error("Invalid chat data:", { room, sender, chatText });
           return;
         }
-        io.sockets.to(room).emit('chat', room, userId, chatText);
-        console.log(`${userId} sent message to room ${room}: ${chatText}`);
+
+        // 处理发送的消息
+        io.sockets.to(room).emit('msg send', room, sender, chatText);
+        console.log(`${sender} sent message to room ${room}: ${chatText}`);
+
+        // 储存信息到mongodb
+        await mongodb.createMsg(room, sender, chatText)
+
       } catch (e) {
         console.error("Error in 'chat': ", e);
         socket.emit('error', { message: 'An error occurred while sending the message.' });

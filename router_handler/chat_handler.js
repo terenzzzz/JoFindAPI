@@ -4,7 +4,9 @@ const mongodb = require("../model/mongodb");
 
 exports.createRoom = async (req, res) => {
     try{
-        const addedChatRoom = await mongodb.createRoom(req.user._id, req.body.company)
+        const seeker = req.body.seeker? req.body.seeker : req.user._id
+
+        const addedChatRoom = await mongodb.createRoom(seeker, req.body.company)
         if (addedChatRoom){
             return res.send({ status: 200, message: 'Success', data: addedChatRoom})
         }else{

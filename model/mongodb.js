@@ -29,7 +29,6 @@ db.once('open', async () => {
 /* Chat Room */
 const createRoom = async (seeker, company) => {
     try {         
-        // console.log(seeker, company);
         
         const exist = await Chatroom.findOne({seeker: seeker, company: company})
         if (exist) {
@@ -163,7 +162,7 @@ const getApplicationByUser = async (user) => {
 
 const getApplicationByCompany = async (company) => {
     try {         
-        const application = await Application.findOne({company: company})
+        const application = await Application.find({company: company})
         .populate([
             {
                 path: 'job',
